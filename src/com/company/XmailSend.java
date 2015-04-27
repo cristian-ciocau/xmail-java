@@ -26,8 +26,8 @@ public class XmailSend {
      *
      * @return
      */
-    public boolean send(String to, String data) {
-        String mx;
+    public boolean send(String to, String content, String headers) {
+        String mx, data = headers + CRLF + content;
 
         // init
         init();
@@ -36,7 +36,7 @@ public class XmailSend {
         mx = getRandMXIP("mailwhere.com");
 
         // Open Socket
-        connect();
+        connect(mx);
 
         // Read the welcome message
         if (smtpRead(220, "WELCOME") != 220)return false;
@@ -83,7 +83,7 @@ public class XmailSend {
     /**
      *
      */
-    public void connect() {
+    public void connect(String mx) {
         try {
             smtpSocket = new Socket(mx, port);
             inSocket = new BufferedReader(new InputStreamReader(smtpSocket.getInputStream()));

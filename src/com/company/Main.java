@@ -1,7 +1,6 @@
 package com.company;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.Map;
 
 public class Main {
 
@@ -12,18 +11,13 @@ public class Main {
     private static String subj = "Java SMTP Client";
     private static String mesg = "Hooray if you can read this it means the code works!";
 
-    private static String CRLF = "\r\n";
-
     public static void main(String[] args) {
 
-        String data;
+        Map<String, String> data;
 
-        data = "Subject: " + subj + CRLF;
-        data += "To: " + rcpt + CRLF;
-        data += "From: " + mail + CRLF;
-        data += "Date: " + new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX").format(new Date()) + CRLF;
-        data += CRLF;
-        data += mesg;
+        XmailComposer composer = new XmailComposer();
+
+        data = composer.compose(rcpt, subj, mesg, "From: " + mail + "\r\n");
 
         XmailSend send = new XmailSend();
 
@@ -32,7 +26,7 @@ public class Main {
         send.ehlo = ehlo;
         send.from = mail;
 
-        send.send(rcpt, data);
+        send.send(rcpt, data.get("content"), data.get("headers"));
 
         System.out.println(send.log);
 
