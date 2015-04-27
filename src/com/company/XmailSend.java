@@ -10,10 +10,10 @@ import java.util.Map;
  * Created by Christian on 4/26/2015.
  */
 public class XmailSend {
+    public int port = 25;
 
-    public String mx = "mailwhere.com";
-    public int port = 587;
-    public String ehlo = "ceakki.eu";
+    public String ehlo = "localhost";
+    public String from = "root@localhost";
 
     public Map<String, String> log;
 
@@ -26,23 +26,46 @@ public class XmailSend {
      *
      * @return
      */
-    public boolean send() {
+    public boolean send(String to, String data) {
+        String mx;
 
         // init
         init();
+
+        // Get MX IP
+        mx = getRandMXIP("mailwhere.com");
 
         // Open Socket
         connect();
 
         // Read the welcome message
-        if (smtpRead(220, "WELCOME") != 220) { return false; }
+        if (smtpRead(220, "WELCOME") != 220)return false;
 
         // Send Enhanced HELO
-        if (!smtpWrite("EHLO " + ehlo + CRLF)) { return false; }
-        if (smtpRead(250, "HELO") != 250) { return false; }
+        if (!smtpWrite("EHLO " + ehlo + CRLF)) return false;
+        if (smtpRead(250, "HELO") != 250) return false;
+
+        // Send sender
+        if(!smtpWrite("MAIL FROM: <" + from  + ">"  + CRLF)) return false;
+        if(smtpRead(250, "MAIL FROM") != 250) return false;
+
+        // Send recipient
+        if(!smtpWrite("RCPT TO: <" + to + ">" + CRLF)) return false;
+        if(smtpRead(250, "RCPT TO") != 250) return false;
+
+        // Send data start command
+        if(!smtpWrite("DATA" + CRLF)) return false;
+        if(smtpRead(354, "DATA") != 354) return false;
+
+        // Send the e-mail data
+        if(!smtpWrite(data + CRLF)) return false;
+
+        // Send a dot to show we're finished
+        if(!smtpWrite("." + CRLF)) return false; // this line sends a dot to mark the end of message
+        if(smtpRead(250, "DOT") != 250) return false;
 
         // Send QUIT
-        if (!smtpWrite("QUIT" + CRLF)) { return false; }
+        if (!smtpWrite("QUIT" + CRLF)) return false;
         smtpRead(221, "QUIT");
 
         close();
@@ -160,6 +183,14 @@ public class XmailSend {
         }
 
         return true;
+    }
+
+    private String getRandMXIP(String domain) {
+        return "67.210.232.51";
+    }
+
+    private String getRandMX(String domain) {
+        return "mailwhere.com";
     }
 
 }
