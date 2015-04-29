@@ -1,4 +1,4 @@
-package com.company;
+package com.xmail;
 
 import java.util.Map;
 
@@ -18,6 +18,9 @@ public class Main {
         XmailComposer composer = new XmailComposer();
 
         data = composer.compose(rcpt, subj, mesg, "From: " + mail + "\r\n");
+
+        System.out.println(data);
+        System.exit(3);
 
         XmailSend send = new XmailSend();
 

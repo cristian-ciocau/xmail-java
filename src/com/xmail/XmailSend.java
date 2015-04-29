@@ -1,4 +1,4 @@
-package com.company;
+package com.xmail;
 
 import java.io.*;
 import java.net.Socket;
@@ -32,8 +32,10 @@ public class XmailSend {
         // init
         init();
 
+        String[] emailParts = to.split("@");
+
         // Get MX IP
-        mx = getRandMXIP("mailwhere.com");
+        mx = getRandMXIP(emailParts[1]);
 
         // Open Socket
         connect(mx);
