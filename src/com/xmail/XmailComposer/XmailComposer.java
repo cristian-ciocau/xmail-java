@@ -1,4 +1,4 @@
-package com.xmail;
+package com.xmail.XmailComposer;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -121,6 +121,14 @@ public class XmailComposer {
         ret.put("content", content);
 
         return ret;
+    }
+
+    public Map<String, String> compose(String to, String subject, String message) {
+        return compose(to, subject, message, "", new String[0]);
+    }
+
+    public Map<String, String> compose(String to, String subject, String message, String headers) {
+        return compose(to, subject, message, headers, new String[0]);
     }
 
     public String makePlain(String source) {

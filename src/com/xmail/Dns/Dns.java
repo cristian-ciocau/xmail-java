@@ -1,4 +1,4 @@
-package com.xmail;
+package com.xmail.Dns;
 
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
@@ -18,7 +18,7 @@ public class Dns {
      * @return
      * @throws NamingException
      */
-    static String[][] getMX(String domainName) throws NamingException {
+    public static String[][] getMX(String domainName) throws NamingException {
 
         Attribute attributeMX = getDNSRecords(domainName, "MX");
 
@@ -55,7 +55,7 @@ public class Dns {
      * @return
      * @throws NamingException
      */
-    static String[] getA(String domainName) throws NamingException {
+    public static String[] getA(String domainName) throws NamingException {
         Attribute attributeA = getDNSRecords(domainName, "A");
 
         if (attributeA == null) {
@@ -75,7 +75,7 @@ public class Dns {
      * @return
      * @throws NamingException
      */
-    static String[] getAAAA(String domainName) throws NamingException {
+    public static String[] getAAAA(String domainName) throws NamingException {
         Attribute attributeA = getDNSRecords(domainName, "AAAA");
 
         if (attributeA == null) {

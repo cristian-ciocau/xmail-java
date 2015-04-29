@@ -1,6 +1,10 @@
-package com.xmail;
+package com.xmail.XmailService;
 
+import com.xmail.Dns.Dns;
+
+import javax.naming.NamingException;
 import java.io.*;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
@@ -15,12 +19,14 @@ public class XmailSend {
     public String ehlo = "localhost";
     public String from = "root@localhost";
 
+    public String bindingIP = "0.0.0.0";
+
     public Map<String, String> log;
 
-    Socket smtpSocket = null;
-    BufferedReader inSocket = null;
-    BufferedWriter outSocket = null;
-    String CRLF = "\r\n";
+    private Socket smtpSocket = null;
+    private BufferedReader inSocket = null;
+    private BufferedWriter outSocket = null;
+    private String CRLF = "\r\n";
 
     /**
      *
@@ -35,7 +41,7 @@ public class XmailSend {
         String[] emailParts = to.split("@");
 
         // Get MX IP
-        mx = getRandMXIP(emailParts[1]);
+        mx = getMXIP(emailParts[1]);
 
         // Open Socket
         connect(mx);
@@ -87,7 +93,10 @@ public class XmailSend {
      */
     public void connect(String mx) {
         try {
-            smtpSocket = new Socket(mx, port);
+            smtpSocket = new Socket();
+            smtpSocket.setReuseAddress(true);
+            smtpSocket.bind(new InetSocketAddress(bindingIP, 0));
+            smtpSocket.connect(new InetSocketAddress(mx, port));
             inSocket = new BufferedReader(new InputStreamReader(smtpSocket.getInputStream()));
             outSocket = new BufferedWriter(new OutputStreamWriter(smtpSocket.getOutputStream()));
 
@@ -158,7 +167,11 @@ public class XmailSend {
                 }
             }
         } catch (IOException e) {
-            log.put("SOCKET CLOSE", "IOException:  " + e);
+            log.put("SOCKET READ", "IOException:  " + e);
+            return 0;
+        }
+        catch (NullPointerException e) {
+            log.put("SOCKET Read", "NullPointerException:  " + e);
             return 0;
         }
 
@@ -187,12 +200,25 @@ public class XmailSend {
         return true;
     }
 
-    private String getRandMXIP(String domain) {
-        return "67.210.232.51";
-    }
+    private String getMXIP(String domain) {
+        String ret = domain;
 
-    private String getRandMX(String domain) {
-        return "mailwhere.com";
+        try {
+            String[][] mxs = Dns.getMX(domain);
+
+            for(String[] mx: mxs) {
+                String[] ips = Dns.getA(mx[1]);
+
+                if (ips.length > 0) {
+                    ret = ips[0];
+                }
+            }
+        }
+        catch (NamingException e) {
+
+        }
+
+        return ret;
     }
 
 }
