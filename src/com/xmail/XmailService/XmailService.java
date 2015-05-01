@@ -60,7 +60,6 @@ public class XmailService implements ThreadCompleteListener {
             }
 
             List<QueuedMails> mails = queue.getEmails(XmailConfig.maxSmtpThreads);
-
             for (QueuedMails mail : mails) {
 
                 if (runningSmtpThreads < XmailConfig.maxSmtpThreads) {
@@ -74,7 +73,7 @@ public class XmailService implements ThreadCompleteListener {
                     smtpThreadsList.add(newThread);
                     newThread.start();
 
-                    logger.info(newThread.getName() + " sending email to " + mail.get("to").toString() + "...");
+                    logger.info(newThread.getName() + " sending email to " + mail.get("mail_to").toString() + "...");
 
                     runningSmtpThreads++;
 

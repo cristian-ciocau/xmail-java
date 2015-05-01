@@ -17,13 +17,14 @@ public class XmailThread extends NotifyingThread {
     int mailId;
 
     public void doRun() {
-        String to = "", mail_path = "", data = "";
+        String to = "", mail_path = "", data;
         boolean status = false;
-
         QueuedMails mail = null;
+        XmailQueue queue = null;
+
 
         try {
-            XmailQueue queue = new XmailQueue();
+            queue = new XmailQueue();
             queue.init(XmailConfig.dbPath);
 
             mail = queue.getEmail(mailId);
@@ -50,11 +51,14 @@ public class XmailThread extends NotifyingThread {
                 logger.info("Email " + to +  " for was sent okay.");
             } else {
                 // check the log and queue if necessarily
-                mail.set("status", 0);
-                mail.saveIt();
+                queue.queueEmail(mail);
+
+                // avoid adding again this mail to queue
+                mail = null;
 
                 logger.info("Email " + to +  " could not be delivered.");
             }
+
         } catch (IOException e) {
             logger.error("Can not open email file: " + mail_path);
         }
@@ -63,9 +67,8 @@ public class XmailThread extends NotifyingThread {
         }
         finally {
             // queue it?
-            if(!status && mail != null) {
-                mail.set("status", 0);
-                mail.saveIt();
+            if(!status && mail != null && queue != null) {
+                queue.queueEmail(mail);
             }
         }
 
