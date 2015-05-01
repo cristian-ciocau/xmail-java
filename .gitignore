@@ -1,7 +1,4 @@
 *.iml
 .idea/
-data/
-logs/
-mail/
 out/
 taget/
