@@ -1,10 +1,8 @@
 package com.xmail.XmailService;
 
 import com.xmail.Database.QueuedMails;
-import com.xmail.Threads.NotifyingThread;
 import com.xmail.Threads.ThreadCompleteListener;
-import sun.misc.Signal;
-import sun.misc.SignalHandler;
+import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +11,8 @@ import java.util.List;
  * Created by cristian on 4/29/15.
  */
 public class XmailService implements ThreadCompleteListener {
+    final static Logger logger = Logger.getRootLogger();
+
     int runningSmtpThreads = 0;
 
     List<XmailThread> smtpThreadsList = new ArrayList<XmailThread>();
@@ -24,6 +24,10 @@ public class XmailService implements ThreadCompleteListener {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             public void run() {
                 shutdown = true;
+
+                if(logger.isDebugEnabled()) {
+                    logger.debug("Catch exit signal.");
+                }
 
                 for (XmailThread thread : smtpThreadsList) {
                     try {
@@ -42,11 +46,18 @@ public class XmailService implements ThreadCompleteListener {
 
         queue.init(XmailConfig.dbPath);
 
+        logger.info("XmailService started.");
+
         // Loop forever
         while (true) {
 
-            System.out.println(shutdown);
-            if(shutdown) break;
+            if (shutdown) {
+                if(logger.isDebugEnabled()) {
+                    logger.debug("Exiting infinite loop.");
+                }
+
+                break;
+            }
 
             List<QueuedMails> mails = queue.getEmails(XmailConfig.maxSmtpThreads);
 
@@ -63,8 +74,13 @@ public class XmailService implements ThreadCompleteListener {
                     smtpThreadsList.add(newThread);
                     newThread.start();
 
+                    logger.info(newThread.getName() + " sending email to " + mail.get("to").toString() + "...");
+
                     runningSmtpThreads++;
 
+                }
+                else {
+                    logger.info("Maximum of concurrent running SMTP threads reached...");
                 }
             }
 
@@ -78,6 +94,6 @@ public class XmailService implements ThreadCompleteListener {
 
     public void notifyOfThreadComplete(Thread finishedThread) {
         runningSmtpThreads--;
-        System.out.println("Thread finished");
+        logger.info(finishedThread.getName() + " ended.");
     }
 }
