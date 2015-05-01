@@ -3,7 +3,10 @@ package com.xmail.XmailService;
 import com.xmail.Database.QueuedMails;
 import com.xmail.Threads.NotifyingThread;
 import com.xmail.Threads.ThreadCompleteListener;
+import sun.misc.Signal;
+import sun.misc.SignalHandler;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -12,28 +15,63 @@ import java.util.List;
 public class XmailService implements ThreadCompleteListener {
     int runningSmtpThreads = 0;
 
+    List<XmailThread> smtpThreadsList = new ArrayList<XmailThread>();
+
+    boolean shutdown = false;
+
     public void start() {
+
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            public void run() {
+                shutdown = true;
+
+                for (XmailThread thread : smtpThreadsList) {
+                    try {
+                        if (thread.isAlive()) {
+                            thread.join();
+                        }
+                    } catch (InterruptedException e) {
+                        System.out.println(e);
+                    }
+                }
+            }
+        }));
+
 
         XmailQueue queue = new XmailQueue();
 
         queue.init(XmailConfig.dbPath);
 
-        List<QueuedMails> mails = queue.getEmails(XmailConfig.maxSmtpThreads);
+        // Loop forever
+        while (true) {
 
-        for(QueuedMails mail: mails) {
+            System.out.println(shutdown);
+            if(shutdown) break;
 
-            if(runningSmtpThreads < XmailConfig.maxSmtpThreads) {
+            List<QueuedMails> mails = queue.getEmails(XmailConfig.maxSmtpThreads);
 
-                mail.set("status", 1).saveIt();
+            for (QueuedMails mail : mails) {
 
-                XmailThread newThread = new XmailThread();
-                newThread.addListener(this);
-                newThread.addMailId((Integer) mail.get("id"));
-                //newThread.setDaemon(true);
-                newThread.start();
+                if (runningSmtpThreads < XmailConfig.maxSmtpThreads) {
 
-                runningSmtpThreads++;
+                    mail.set("status", 1).saveIt();
 
+                    XmailThread newThread = new XmailThread();
+                    newThread.addListener(this);
+                    newThread.addMailId((Integer) mail.get("id"));
+                    newThread.setDaemon(true);
+                    smtpThreadsList.add(newThread);
+                    newThread.start();
+
+                    runningSmtpThreads++;
+
+                }
+            }
+
+            try {
+                Thread.sleep(XmailConfig.loopTime * 1000);
+            } catch(InterruptedException ex) {
+                Thread.currentThread().interrupt();
             }
         }
     }

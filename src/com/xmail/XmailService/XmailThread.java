@@ -15,6 +15,7 @@ public class XmailThread extends NotifyingThread {
 
     public void doRun() {
         String to, mail_path, data;
+        boolean status = false;
 
         XmailQueue queue = new XmailQueue();
         queue.init(XmailConfig.dbPath);
@@ -43,7 +44,7 @@ public class XmailThread extends NotifyingThread {
         sender.bindingIP = "0.0.0.0";
 
         try {
-            boolean status = sender.send(to, data);
+            status = sender.send(to, data);
 
             if (status) {
                 // okay
@@ -56,8 +57,10 @@ public class XmailThread extends NotifyingThread {
         }
         finally {
             // queue it?
-            mail.set("status", 0);
-            mail.saveIt();
+            if(!status) {
+                mail.set("status", 0);
+                mail.saveIt();
+            }
         }
 
         System.out.println(sender.log);
