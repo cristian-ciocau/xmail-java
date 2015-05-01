@@ -1,5 +1,7 @@
 package com.xmail.Threads;
 
+import com.xmail.Database.QueuedMails;
+
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 

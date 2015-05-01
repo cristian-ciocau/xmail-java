@@ -32,8 +32,8 @@ public class XmailSend {
      *
      * @return
      */
-    public boolean send(String to, String content, String headers) {
-        String mx, data = headers + CRLF + content;
+    public boolean send(String to, String data) {
+        String mx;
 
         // init
         init();

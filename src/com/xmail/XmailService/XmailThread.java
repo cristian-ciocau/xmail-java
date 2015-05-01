@@ -1,42 +1,70 @@
 package com.xmail.XmailService;
 
+import com.xmail.Database.QueuedMails;
+import com.xmail.IO.FileUtils;
 import com.xmail.Threads.NotifyingThread;
+
+import java.io.IOException;
 
 /**
  * Created by cristian on 4/29/15.
  */
 public class XmailThread extends NotifyingThread {
 
-    public void doRun() {
-        String to, content, headers;
+    int mailId;
 
-        to = "vlad@mailwhere.com";
-        content = "Hi there. I will be very happy if you will receive this email.";
-        headers = "From: cristian@ceakki.eu\r\n";
+    public void doRun() {
+        String to, mail_path, data;
+
+        XmailQueue queue = new XmailQueue();
+        queue.init(XmailConfig.dbPath);
+
+        QueuedMails mail = queue.getEmail(mailId);
+
+        to = mail.get("mail_to").toString();
+        mail_path = mail.get("email_path").toString();
+
+        try {
+            data = FileUtils.getFileContent(mail_path);
+        }
+        catch (IOException e) {
+            mail.set("status", 0);
+            mail.saveIt();
+            return;
+        }
 
         XmailSend sender = new XmailSend();
 
         sender.port = 24;
 
-        sender.ehlo = "tcp";
-        sender.from = "critian@ceakki.eu";
+        sender.ehlo = XmailConfig.ehlo;
+        sender.from = mail.get("mail_from").toString();
 
         sender.bindingIP = "0.0.0.0";
 
         try {
-            boolean status = sender.send(to, content, headers);
+            boolean status = sender.send(to, data);
 
             if (status) {
                 // okay
+                mail.delete();
             } else {
                 // check the log and queue if necessarily
+                mail.set("status", 0);
+                mail.saveIt();
             }
         }
         finally {
             // queue it?
+            mail.set("status", 0);
+            mail.saveIt();
         }
 
         System.out.println(sender.log);
 
+    }
+
+    public void addMailId(int id) {
+        mailId = id;
     }
 }

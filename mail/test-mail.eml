@@ -1,0 +1,33 @@
+Subject: Hello World Mail
+From: <cristian@ceakki.eu>
+To: <vlad@mailwhere.com>
+Date: Fri, 01 May 2015 14:55:31 +0100
+Message-Id: <UDd5rHqGjjUDd5rHqGjj-1430488531@mailwhere.com>
+X-Mailer: Xmail 3.6 (by mailwhere.com)
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="xmailboundaryone"
+
+--xmailboundaryone
+Content-Type: text/plain; charset=UTF-8
+
+Hi there,
+This is my first email message.
+I hope you'll receive it soon!
+Best wishes :p
+
+--xmailboundaryone
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+<span style=3D"font-family: arial, helvetica, sans-serif; font-size: small;=
+">Hi there,</span><div><span style=3D"font-family: arial, helvetica, sans-s=
+erif; font-size: small;"><br></span></div><div><span style=3D"font-family: =
+arial, helvetica, sans-serif; font-size: small;">This is my first email mes=
+sage.</span></div><div><span style=3D"font-family: arial, helvetica, sans-s=
+erif; font-size: small;"><br></span></div><div><span style=3D"font-family: =
+arial, helvetica, sans-serif; font-size: small;">I hope you'll receive it s=
+oon!</span></div><div><span style=3D"font-family: arial, helvetica, sans-se=
+rif; font-size: small;"><br></span></div><div><span style=3D"font-family: a=
+rial, helvetica, sans-serif; font-size: small;">Best wishes :p</span></div>
+
+--xmailboundaryone--
