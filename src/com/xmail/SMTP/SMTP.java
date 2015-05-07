@@ -8,17 +8,6 @@ import java.util.Map;
  */
 public class SMTP {
 
-    private static final Map<Integer, String> errorCodes;
-    static
-    {
-        errorCodes = new HashMap<Integer, String>();
-        errorCodes.put(11, "Server not found");
-        errorCodes.put(12, "Connection reset by peer");
-        errorCodes.put(13, "Error read from socket");
-        errorCodes.put(14, "Error write on socket");
-        errorCodes.put(25, "Message delivered");
-    }
-
     public static final int SUCCESS = 0;
     public static final int SERVER_NOT_FOUND = -1;
     public static final int MAILBOX_NOT_EXISTS = -2;
