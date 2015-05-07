@@ -15,6 +15,16 @@ public class XmailConfig {
 
     public static int loopTime = 10;
 
+    public static String[] outgoingIPv4 = new String[] {
+            "0.0.0.0",
+    };
+
+    public static String[] outgoingIPv6 = new String[] {
+            "::1",
+    };
+
+    public static boolean ipv6Enabled = false;
+
     public static List<Integer> retryTime = new ArrayList<Integer>() {{
         add(0, 15); // First retry = 15 minutes
         add(1, 180); // Second retry = 3 hours

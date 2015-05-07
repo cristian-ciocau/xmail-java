@@ -1,4 +1,4 @@
-package com.xmail.XmailComposer;
+package com.xmail.Mime;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;

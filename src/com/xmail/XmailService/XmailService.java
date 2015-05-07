@@ -1,6 +1,6 @@
 package com.xmail.XmailService;
 
-import com.xmail.Database.QueuedMails;
+import com.xmail.XmailService.Models.QueuedMails;
 import com.xmail.Threads.ThreadCompleteListener;
 import org.apache.log4j.Logger;
 
@@ -73,8 +73,6 @@ public class XmailService implements ThreadCompleteListener {
                     smtpThreadsList.add(newThread);
                     newThread.start();
 
-                    logger.info(newThread.getName() + " sending email to " + mail.get("mail_to").toString() + "...");
-
                     runningSmtpThreads++;
 
                 }
@@ -93,6 +91,6 @@ public class XmailService implements ThreadCompleteListener {
 
     public void notifyOfThreadComplete(Thread finishedThread) {
         runningSmtpThreads--;
-        logger.info(finishedThread.getName() + " ended.");
+        logger.info("End.");
     }
 }

@@ -1,4 +1,4 @@
-package com.xmail.Database;
+package com.xmail.XmailService.Models;
 
 import org.javalite.activejdbc.Model;
 

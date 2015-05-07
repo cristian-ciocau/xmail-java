@@ -1,5 +1,6 @@
 package com.xmail.XmailComposer;
 
+import com.xmail.Mime.Mime;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.*;
