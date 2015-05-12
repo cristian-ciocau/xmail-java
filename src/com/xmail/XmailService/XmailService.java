@@ -25,7 +25,7 @@ public class XmailService implements ThreadCompleteListener {
             public void run() {
                 shutdown = true;
 
-                if(logger.isDebugEnabled()) {
+                if (logger.isDebugEnabled()) {
                     logger.debug("Catch exit signal.");
                 }
 
@@ -41,10 +41,11 @@ public class XmailService implements ThreadCompleteListener {
             }
         }));
 
+        // Initialize the Mail Queue
+        MailQueue.init(XmailConfig.dbPath);
 
-        XmailQueue queue = new XmailQueue();
-
-        queue.init(XmailConfig.dbPath);
+        // Initialize the outgoing IP addresses queue
+        IpQueue.init(XmailConfig.outgoingIPv4, XmailConfig.outgoingIPv6);
 
         logger.info("XmailService started.");
 
@@ -59,7 +60,7 @@ public class XmailService implements ThreadCompleteListener {
                 break;
             }
 
-            List<QueuedMails> mails = queue.getEmails(XmailConfig.maxSmtpThreads);
+            List<QueuedMails> mails = MailQueue.getEmails(XmailConfig.maxSmtpThreads);
             for (QueuedMails mail : mails) {
 
                 if (runningSmtpThreads < XmailConfig.maxSmtpThreads) {

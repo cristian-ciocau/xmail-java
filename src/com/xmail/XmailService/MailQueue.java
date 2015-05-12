@@ -10,16 +10,16 @@ import java.util.*;
 /**
  * Created by cristian on 4/30/15.
  */
-public class XmailQueue {
+public class MailQueue {
 
     /**
-     * XmailQueue.init()
+     * MailQueue.init()
      *
      * Initialize the queue
      *
      * @param dbPath path to SQLite database
      */
-    public void init(String dbPath) {
+    public static void init(String dbPath) {
 
         Base.open("org.sqlite.JDBC", "jdbc:sqlite:" + dbPath, "", "");
 
@@ -27,11 +27,11 @@ public class XmailQueue {
     }
 
     /**
-     * XmailQueue.createQueue()
+     * MailQueue.createQueue()
      *
      *  Creates the queue table if it not exists.
      */
-    public void createQueue() {
+    public static void createQueue() {
         Base.exec("CREATE TABLE IF NOT EXISTS queued_mails (\n" +
                 "    id             INTEGER     PRIMARY KEY,\n" +
                 "    mail_from      STRING      NOT NULL,\n" +
@@ -51,14 +51,14 @@ public class XmailQueue {
     }
 
     /**
-     * XmailQueue.getEmails()
+     * MailQueue.getEmails()
      *
      * Returns a list of emails to be processed
      *
      * @param limit specify how many emails to return
      * @return a list of ActiveRecord email objects
      */
-    public List<QueuedMails> getEmails(int limit) {
+    public static synchronized List<QueuedMails> getEmails(int limit) {
         List<QueuedMails> ret = QueuedMails.where("status = 0 AND retry < ? AND date_processed < datetime('now')",
                 XmailConfig.maxRetryCount)
                 .limit(limit)
@@ -67,7 +67,7 @@ public class XmailQueue {
     }
 
     /**
-     * XmailQueue.queueEmail
+     * MailQueue.queueEmail
      *
      * Puts an email back to queue
      *
@@ -82,7 +82,7 @@ public class XmailQueue {
      * @param bindingIPv6 the last IPv6 address used for outgoing
      * @return true if the mail was queued | false if the email reached the maximum Retry
      */
-    public boolean queueEmail(QueuedMails mail, int lastCode, String lastMessage, int ipIndex, int mxIndex,
+    public static synchronized boolean queueEmail(QueuedMails mail, int lastCode, String lastMessage, int ipIndex, int mxIndex,
                            boolean ipv6Used, String bindingIPv4, String bindingIPv6) {
 
         if(mail != null) {
@@ -119,25 +119,25 @@ public class XmailQueue {
     }
 
     /**
-     * XmailQueue.getEmail()
+     * MailQueue.getEmail()
      *
      * Returns an email from queue by ID
      *
      * @param id the id of the email to be retrieved
      * @return the ActiveRecord object containing the email information
      */
-    public QueuedMails getEmail(int id) {
+    public static synchronized QueuedMails getEmail(int id) {
         return QueuedMails.findFirst("id = ? ", id);
     }
 
     /**
-     * XmailQueue.deleteEmail()
+     * MailQueue.deleteEmail()
      *
      * Remove Email from queue and from disk
      *
      * @param mail the ActiveRecord email object to be deleted
      */
-    public void deleteEmail(QueuedMails mail) {
+    public static synchronized void deleteEmail(QueuedMails mail) {
         String path = mail.get("email_path").toString();
         FileUtils.deleteFile(path);
 
@@ -155,7 +155,7 @@ public class XmailQueue {
      * @param ipv6Used
      * @param bindingIPv4
      */
-    public boolean queueEmail(QueuedMails mail, int lastCode, String lastMessage, int ipIndex, int mxIndex,
+    public static synchronized boolean queueEmail(QueuedMails mail, int lastCode, String lastMessage, int ipIndex, int mxIndex,
                            boolean ipv6Used, String bindingIPv4) {
 
         return queueEmail(mail, lastCode, lastMessage, ipIndex, mxIndex, ipv6Used, bindingIPv4, "::1");
@@ -171,7 +171,7 @@ public class XmailQueue {
      * @param mxIndex
      * @param ipv6Used
      */
-    public boolean queueEmail(QueuedMails mail, int lastCode, String lastMessage, int ipIndex, int mxIndex,
+    public static synchronized boolean queueEmail(QueuedMails mail, int lastCode, String lastMessage, int ipIndex, int mxIndex,
                            boolean ipv6Used) {
 
         return queueEmail(mail, lastCode, lastMessage, ipIndex, mxIndex, ipv6Used, "0.0.0.0", "::1");
@@ -185,7 +185,7 @@ public class XmailQueue {
      * @param ipIndex
      * @param mxIndex
      */
-    public boolean queueEmail(QueuedMails mail, int lastCode, String lastMessage, int ipIndex, int mxIndex) {
+    public static synchronized boolean queueEmail(QueuedMails mail, int lastCode, String lastMessage, int ipIndex, int mxIndex) {
         return queueEmail(mail, lastCode, lastMessage, ipIndex, mxIndex, false);
     }
 
@@ -196,7 +196,7 @@ public class XmailQueue {
      * @param lastMessage
      * @param ipIndex
      */
-    public boolean queueEmail(QueuedMails mail, int lastCode, String lastMessage, int ipIndex) {
+    public synchronized boolean queueEmail(QueuedMails mail, int lastCode, String lastMessage, int ipIndex) {
         return queueEmail(mail, lastCode, lastMessage, ipIndex, 0);
     }
 
@@ -206,7 +206,7 @@ public class XmailQueue {
      * @param lastCode
      * @param lastMessage
      */
-    public boolean queueEmail(QueuedMails mail, int lastCode, String lastMessage) {
+    public static synchronized boolean queueEmail(QueuedMails mail, int lastCode, String lastMessage) {
         return queueEmail(mail, lastCode, lastMessage, -1, -1);
     }
 

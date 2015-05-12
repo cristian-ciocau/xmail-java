@@ -1,6 +1,7 @@
 package com.xmail.SMTP;
 
 import com.xmail.Dns.Dns;
+import com.xmail.XmailService.IpQueue;
 import com.xmail.XmailService.XmailConfig;
 
 import javax.naming.NamingException;
@@ -12,6 +13,10 @@ public class AdvancedSender extends Sender {
     int ipIndex = 0;
     boolean ipv6Used = true;
     int mxIndex = 0;
+
+    public String bindingIPv4 = null;
+    public String bindingIPv6 = null;
+
 
     /**
      * Sender.send()
@@ -39,6 +44,8 @@ public class AdvancedSender extends Sender {
                 for(; mxIndex < mxs.length; mxIndex++) {
 
                     if(XmailConfig.ipv6Enabled && ipv6Used) {
+                        if(bindingIPv6 == null) bindingIPv6 = IpQueue.getIpv6();
+
                         String[] ips6 = Dns.getAAAA(mxs[mxIndex][1]);
                         int ret = send2IP(to, data, ips6, bindingIPv6);
 
@@ -48,6 +55,7 @@ public class AdvancedSender extends Sender {
 
                     // Try to IPv4
                     ipv6Used = false;
+                    if(bindingIPv4 == null) bindingIPv4 = IpQueue.getIpv4();
                     String[] ips4 = Dns.getA(mxs[mxIndex][1]);
                     int ret = send2IP(to, data, ips4, bindingIPv4);
 
@@ -161,5 +169,27 @@ public class AdvancedSender extends Sender {
      */
     public void setIpv6Used(boolean usage) {
         ipv6Used = usage;
+    }
+
+    /**
+     * AdvancedSender.getIpv4()
+     *
+     * Returns the used IPv4 address
+     *
+     * @return
+     */
+    public String getIpv4() {
+        return bindingIPv4;
+    }
+
+    /**
+     * AdvancedSender.getIpv6()
+     *
+     * Returns the used IPv6 address
+     *
+     * @return
+     */
+    public String getIpv6() {
+        return bindingIPv6;
     }
 }

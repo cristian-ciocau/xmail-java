@@ -26,8 +26,6 @@ public class Sender {
     public int port = 25;
     public String ehlo = "localhost";
     public String from = "root@localhost";
-    public String bindingIPv4 = "0.0.0.0";
-    public String bindingIPv6 = "::1";
 
     // error management
     int lastCode = 0;
@@ -126,7 +124,6 @@ public class Sender {
             if (!smtpWrite("RCPT TO: <" + to + ">" + CRLF)) return false;
             if (smtpRead(250, "RCPT TO") != 250) break;
 
-/*
             // Send data start command
             if(!smtpWrite("DATA" + CRLF)) return false;
             if(smtpRead(354, "DATA") != 354) break;
@@ -137,7 +134,6 @@ public class Sender {
             // Send a dot to show we're finished
             if(!smtpWrite("." + CRLF)) return false; // this line sends a dot to mark the end of message
             if(smtpRead(250, "DOT") != 250) break;
-*/
 
             // Ok, we've sent all emails...
             break;

@@ -25,19 +25,14 @@ public class XmailThread extends NotifyingThread {
         String mail_path = "";
         int status = SMTP.UNKNOWN_ERROR;
         QueuedMails mail = null;
-        XmailQueue queue = null;
 
         logger.info("Start sending email...");
 
-        String bindingIPv4 = "0.0.0.0";
-        String bindingIPv6 = "::1";
-
 
         try {
-            queue = new XmailQueue();
-            queue.init(XmailConfig.dbPath);
 
-            mail = queue.getEmail(mailId);
+            MailQueue.init(XmailConfig.dbPath);
+            mail = MailQueue.getEmail(mailId);
 
             to = mail.get("mail_to").toString();
             mail_path = mail.get("email_path").toString();
@@ -53,9 +48,6 @@ public class XmailThread extends NotifyingThread {
 
             sender.ehlo = XmailConfig.ehlo;
             sender.from = mail.get("mail_from").toString();
-
-            sender.bindingIPv4 = bindingIPv4;
-            sender.bindingIPv6 = bindingIPv6;
 
             // If we are attempting to send a queued mail, we need to use the last used settings
             if(retryCount > 0) {
@@ -77,21 +69,21 @@ public class XmailThread extends NotifyingThread {
 
             if (status == SMTP.SUCCESS) {
                 // okay
-                queue.deleteEmail(mail);
+                MailQueue.deleteEmail(mail);
                 logger.info("Email was sent okay.");
             }
             else if(status == SMTP.MAILBOX_NOT_EXISTS || status == SMTP.PERMANENT_ERROR) {
                 // send bounce
 
                 // remove the file from disk
-                queue.deleteEmail(mail);
+                MailQueue.deleteEmail(mail);
 
                 logger.info("Email could not be delivered. Not queued.");
             }
             else {
                 // check the log and queue if necessarily
-                if(!queue.queueEmail(mail, sender.getLastCode(), sender.getLastMessage(), sender.getIpIndex(),
-                        sender.getMxIndex(), sender.isIpv6Used(), bindingIPv4, bindingIPv6)) {
+                if(!MailQueue.queueEmail(mail, sender.getLastCode(), sender.getLastMessage(), sender.getIpIndex(),
+                        sender.getMxIndex(), sender.isIpv6Used(), sender.getIpv4(), sender.getIpv6())) {
 
                     // send the bounce
                 }
@@ -110,10 +102,10 @@ public class XmailThread extends NotifyingThread {
         }
         finally {
             // queue it?
-            if(status != SMTP.SUCCESS && mail != null && queue != null) {
+            if(status != SMTP.SUCCESS && mail != null) {
                 logger.error("Mail could not be delivered. Internal error");
-                if(!queue.queueEmail(mail, 999, "internal error")) {
-                    // bounce
+                if(!MailQueue.queueEmail(mail, 999, "internal error")) {
+                    // send the bounce
                 }
             }
         }
