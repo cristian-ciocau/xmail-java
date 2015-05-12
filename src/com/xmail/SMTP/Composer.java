@@ -1,4 +1,4 @@
-package com.xmail.XmailComposer;
+package com.xmail.SMTP;
 
 import com.xmail.Mime.Mime;
 import org.apache.commons.io.FilenameUtils;
@@ -10,7 +10,7 @@ import java.util.*;
 /**
  * Created by cristian on 4/27/15.
  */
-public class XmailComposer {
+public class Composer {
 
     String CRLF = "\r\n";
 

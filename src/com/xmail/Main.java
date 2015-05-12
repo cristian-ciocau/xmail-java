@@ -10,7 +10,6 @@ public class Main {
         PropertyConfigurator.configure("classes/log4j.properties");
 
         XmailService xmail = new XmailService();
-
         xmail.start();
     }
 }

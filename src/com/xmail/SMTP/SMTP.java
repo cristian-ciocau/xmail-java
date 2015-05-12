@@ -33,54 +33,64 @@ public class SMTP {
             case 551:
                 return MAILBOX_NOT_EXISTS;
 
-                // Server asked to close connection
+            // Server asked to close connection
             case 102:
 
-                // Transmission Error
+            // Transmission Error
             case 103:
             case 104:
 
-                // Connection Timeout
+            // TLS error
+            case 105:
+
+            // Connection Timeout
             case 421:
 
-                // Quota exceeded
+            // Quota exceeded
             case 422:
 
             case 431:
             case 432:
 
-                // The connection was dropped during the transmission.
+            // The connection was dropped during the transmission.
             case 442:
 
             case 450:
             case 451:
+
+            // the recipient has less space available that the SIZE advertised in MAIL
             case 452:
 
-                // This is a local error with the sending server
+            // This is a local error with the sending server
             case 471:
 
                 // queue
                 return TEMPORARY_ERROR;
 
+            // Mail too large before delivery
+            case 106:
+
             // The host server for the recipient’s domain name cannot be found (DNS error)
             case 512:
 
-                // Size matters
+            // Size matters
             case 523:
 
-                // Authentication required or spam
+            // Authentication required or spam
             case 530:
 
-                // Spam?
+            // Spam?
             case 541:
 
+            // The mail is bigger that advertised SIZE for this server
             case 552:
+
             case 553:
 
-                // Spam?
+            // Spam?
             case 554:
 
-                // I have been told not to work with you !!!
+            // I have been told not to work with you !!!
             case 571:
 
                 // do no try again (ever)

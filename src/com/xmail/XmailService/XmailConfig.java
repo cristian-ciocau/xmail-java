@@ -11,7 +11,9 @@ public class XmailConfig {
 
     public static String dbPath = "/Data/git/xmail-java/data/data.db";
 
-    public static int maxSmtpThreads = 1;
+    public static int port = 24;
+
+    public static int maxSmtpThreads = 10;
 
     public static int loopTime = 10;
 

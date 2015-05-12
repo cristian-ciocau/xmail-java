@@ -1,10 +1,10 @@
 package com.xmail.XmailService;
 
+import com.xmail.SMTP.AdvancedSender;
 import com.xmail.XmailService.Models.QueuedMails;
 import com.xmail.IO.FileUtils;
 import com.xmail.SMTP.SMTP;
 import com.xmail.Threads.NotifyingThread;
-import com.xmail.XmailSender.XmailSender;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -17,6 +17,9 @@ public class XmailThread extends NotifyingThread {
 
     int mailId;
 
+    /**
+     *
+     */
     public void doRun() {
         final String to, data;
         String mail_path = "";
@@ -39,11 +42,14 @@ public class XmailThread extends NotifyingThread {
             to = mail.get("mail_to").toString();
             mail_path = mail.get("email_path").toString();
 
-            data = FileUtils.getFileContent(mail_path);
+            data = FileUtils.getFileContents(mail_path);
 
-            XmailSender sender = new XmailSender();
+            int retryCount = Integer.parseInt(mail.get("retry").toString());
 
-            sender.port = 24;
+            AdvancedSender sender = new AdvancedSender();
+
+            // Set the port specified in config
+            sender.port = XmailConfig.port;
 
             sender.ehlo = XmailConfig.ehlo;
             sender.from = mail.get("mail_from").toString();
@@ -51,31 +57,49 @@ public class XmailThread extends NotifyingThread {
             sender.bindingIPv4 = bindingIPv4;
             sender.bindingIPv6 = bindingIPv6;
 
+            // If we are attempting to send a queued mail, we need to use the last used settings
+            if(retryCount > 0) {
+                sender.bindingIPv4 = mail.get("bind_ipv4").toString();
+                sender.bindingIPv6 = mail.get("bind_ipv6").toString();
+
+                sender.setMxIndex(Integer.parseInt(mail.get("mx_ctr").toString()));
+                sender.setIpIndex(Integer.parseInt(mail.get("ip_ctr").toString()));
+                sender.setIpv6Used(Boolean.parseBoolean(mail.get("ipv6_used").toString()));
+            }
+
+            // if the last error was occurred during wrapping socket for TLS, skip TLS this time
+            if(mail.get("last_code").toString() == "105") {
+                sender.disableTls();
+            }
+
+            // And send!
             status = sender.send(to, data);
 
             if (status == SMTP.SUCCESS) {
                 // okay
-                mail.delete();
+                queue.deleteEmail(mail);
                 logger.info("Email was sent okay.");
             }
             else if(status == SMTP.MAILBOX_NOT_EXISTS || status == SMTP.PERMANENT_ERROR) {
-                // do not queue this email
-                queue.saveError(mail, sender.getLastCode(), sender.getLastMessage());
+                // send bounce
 
-                // avoid adding again this mail to queue
-                mail = null;
+                // remove the file from disk
+                queue.deleteEmail(mail);
 
                 logger.info("Email could not be delivered. Not queued.");
             }
             else {
                 // check the log and queue if necessarily
-                queue.queueEmail(mail, sender.getLastCode(), sender.getLastMessage(), sender.getIpIndex(),
-                        sender.getMxIndex(), sender.isIpv6Used(), bindingIPv4, bindingIPv6);
+                if(!queue.queueEmail(mail, sender.getLastCode(), sender.getLastMessage(), sender.getIpIndex(),
+                        sender.getMxIndex(), sender.isIpv6Used(), bindingIPv4, bindingIPv6)) {
+
+                    // send the bounce
+                }
 
                 // avoid adding again this mail to queue
                 mail = null;
 
-                logger.info("Email could not be delivered. Qeued.");
+                logger.info("Email could not be delivered. Queued.");
             }
 
         } catch (IOException e) {
@@ -87,12 +111,19 @@ public class XmailThread extends NotifyingThread {
         finally {
             // queue it?
             if(status != SMTP.SUCCESS && mail != null && queue != null) {
-                queue.queueEmail(mail, 999, "internal error");
+                logger.error("Mail could not be delivered. Internal error");
+                if(!queue.queueEmail(mail, 999, "internal error")) {
+                    // bounce
+                }
             }
         }
 
     }
 
+    /**
+     *
+     * @param id
+     */
     public void addMailId(int id) {
         mailId = id;
     }

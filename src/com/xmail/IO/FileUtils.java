@@ -1,6 +1,7 @@
 package com.xmail.IO;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
@@ -8,7 +9,16 @@ import java.io.IOException;
  * Created by cristian on 5/1/15.
  */
 public class FileUtils {
-    public static String getFileContent(String pathToFile) throws IOException {
+    /**
+     * FileUtils.getFileContents()
+     *
+     * Returns the content of a file as a String.
+     *
+     * @param pathToFile
+     * @return
+     * @throws IOException
+     */
+    public static String getFileContents(String pathToFile) throws IOException {
         BufferedReader br = null;
         String content = "";
 
@@ -27,5 +37,10 @@ public class FileUtils {
         }
 
         return content;
+    }
+
+    public static boolean deleteFile(String pathToFile) {
+        File file = new File(pathToFile);
+        return file.delete();
     }
 }
