@@ -7,11 +7,14 @@ import java.util.List;
  * Created by cristian on 5/1/15.
  */
 public class XmailConfig {
-    public static String ehlo = "localhost";
+
+    public static String ehlo = "example.com";
+
+    public static String bounceFrom = "postmaster@example.com";
 
     public static String dbPath = "/Data/git/xmail-java/data/data.db";
 
-    public static int port = 24;
+    public static int port = 25;
 
     public static int maxSmtpThreads = 10;
 

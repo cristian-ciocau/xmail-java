@@ -13,6 +13,9 @@ import java.util.Comparator;
 public class Dns {
 
     /**
+     * Dns.getMX()
+     *
+     * Return an array of advertised MX servers for the given domain name.
      *
      * @param domainName
      * @return
@@ -50,6 +53,9 @@ public class Dns {
     }
 
     /**
+     * Dns.getA()
+     *
+     * Get the list of IPv4 addresses for the given domain name
      *
      * @param domainName
      * @return
@@ -70,6 +76,9 @@ public class Dns {
     }
 
     /**
+     * Dns.getAAAA()
+     *
+     * Get the list of IPv6 addresses for the given domain name
      *
      * @param domainName
      * @return
@@ -90,10 +99,13 @@ public class Dns {
     }
 
     /**
+     * Dns.getDNSRecords()
      *
-     * @param domainName
-     * @param record
-     * @return
+     * Get a DNS record for domain name
+     *
+     * @param domainName the domain name
+     * @param record DNS record type
+     * @return Attribute DNS record
      * @throws NamingException
      */
     static Attribute getDNSRecords(String domainName, String record) throws NamingException {

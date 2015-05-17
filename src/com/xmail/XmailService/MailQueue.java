@@ -12,18 +12,58 @@ import java.util.*;
  */
 public class MailQueue {
 
+    private static MailQueue instance = null;
+    private static String dbPath;
+
+    /**
+     * MailQueue.MailQueue()
+     *
+     * Exists only to defeat instantiation
+     *
+     */
+    protected MailQueue() {
+    }
+
+    /**
+     * MailQueue.getInstance()
+     *
+     * Returns the instance of this singleton class
+     *
+     * @return
+     */
+    public static synchronized MailQueue getInstance() {
+        if(instance == null) {
+            instance = new MailQueue();
+        }
+        return instance;
+    }
+
     /**
      * MailQueue.init()
      *
      * Initialize the queue
      *
-     * @param dbPath path to SQLite database
+     * @param path path to SQLite database
      */
-    public static void init(String dbPath) {
+    public static synchronized void init(String path) {
+        dbPath = path;
+    }
 
+    /**
+     * MailQueue.open()
+     *
+     * Open the Database connection
+     */
+    public static synchronized void open() {
         Base.open("org.sqlite.JDBC", "jdbc:sqlite:" + dbPath, "", "");
-
         createQueue();
+    }
+
+    /**
+     *
+     */
+    public static synchronized void close() {
+        Base.close();
     }
 
     /**
@@ -39,14 +79,24 @@ public class MailQueue {
                 "    email_path     STRING      NOT NULL,\n" +
                 "    date_added     DATETIME    NOT NULL,\n" +
                 "    date_processed DATETIME    NOT NULL,\n" +
-                "    status         INTEGER     NOT NULL,\n" +
-                "    retry          INTEGER (1) NOT NULL,\n" +
-                "    mx_ctr         INTEGER (4) NOT NULL,\n" +
-                "    ip_ctr         INTEGER (4) NOT NULL,\n" +
-                "    bind_ipv4      STRING (15) NOT NULL,\n" +
-                "    bind_ipv6      STRING (39) NOT NULL,\n" +
-                "    last_code      INT (3)     NOT NULL,\n" +
+                "    status         INTEGER     NOT NULL\n" +
+                "                               DEFAULT (0),\n" +
+                "    retry          INTEGER (1) NOT NULL\n" +
+                "                               DEFAULT (0),\n" +
+                "    mx_ctr         INTEGER (4) NOT NULL\n" +
+                "                               DEFAULT (0),\n" +
+                "    ip_ctr         INTEGER (4) NOT NULL\n" +
+                "                               DEFAULT (0),\n" +
+                "    bind_ipv4      STRING (15) NOT NULL\n" +
+                "                               DEFAULT (''),\n" +
+                "    bind_ipv6      STRING (39) NOT NULL\n" +
+                "                               DEFAULT (''),\n" +
+                "    ipv6_used      INTEGER (1) DEFAULT (0) \n" +
+                "                               NOT NULL,\n" +
+                "    last_code      INT (3)     NOT NULL\n" +
+                "                               DEFAULT (0),\n" +
                 "    last_message   STRING      NOT NULL\n" +
+                "                               DEFAULT ('') \n" +
                 ");");
     }
 
@@ -60,7 +110,7 @@ public class MailQueue {
      */
     public static synchronized List<QueuedMails> getEmails(int limit) {
         List<QueuedMails> ret = QueuedMails.where("status = 0 AND retry < ? AND date_processed < datetime('now')",
-                XmailConfig.maxRetryCount)
+                XmailConfig.maxRetryCount - 1)
                 .limit(limit)
                 .orderBy("date_processed asc");
         return ret;
@@ -70,7 +120,6 @@ public class MailQueue {
      * MailQueue.queueEmail
      *
      * Puts an email back to queue
-     *
      *
      * @param mail the ActiveRecord mail object
      * @param lastCode last error Code
@@ -86,9 +135,14 @@ public class MailQueue {
                            boolean ipv6Used, String bindingIPv4, String bindingIPv6) {
 
         if(mail != null) {
+            bindingIPv4 = (bindingIPv4 != null ? bindingIPv4 : "");
+            bindingIPv6 = (bindingIPv6 != null ? bindingIPv6 : "");
+
 
             int retry = (Integer) mail.get("retry");
-            if(retry < XmailConfig.maxRetryCount) {
+            if(retry < XmailConfig.maxRetryCount - 1) {
+                retry++;
+
                 long timeAdj = XmailConfig.retryTime.get(retry) * 60 * 1000;
 
                 /* This is a crazy approach to get the time in UTC ? */
@@ -98,7 +152,7 @@ public class MailQueue {
                 simpleDateFormat.setTimeZone(timeZone);
                 calendar.setTime(new Date(new Date().getTime() + timeAdj));
 
-                mail.set("retry", (Integer) mail.get("retry") + 1);
+                mail.set("retry", retry);
                 mail.set("date_processed", simpleDateFormat.format(calendar.getTime()));
                 mail.set("status", 0);
                 mail.set("last_code", Integer.toString(lastCode));
@@ -110,7 +164,8 @@ public class MailQueue {
                 mail.set("bind_ipv6", bindingIPv6);
                 mail.saveIt();
             }
-            else {
+
+            if(retry >= XmailConfig.maxRetryCount - 1) {
                 return false;
             }
         }
@@ -144,8 +199,36 @@ public class MailQueue {
         mail.delete();
     }
 
+    /**
+     * MailQueue.addEmail()
+     *
+     * Adds a new email to queue
+     *
+     * @param to
+     * @param from
+     * @param pathToFile
+     */
+    public static synchronized void addEmail(String to, String from, String pathToFile) {
+        TimeZone timeZone = TimeZone.getTimeZone("UTC");
+        Calendar calendar = Calendar.getInstance(timeZone);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss", Locale.US);
+        simpleDateFormat.setTimeZone(timeZone);
+        calendar.setTime(new Date());
+
+        QueuedMails mail = new QueuedMails();
+        mail.set("mail_to", to);
+        mail.set("mail_from", from);
+        mail.set("email_path", pathToFile);
+        mail.set("date_added", simpleDateFormat.format(calendar.getTime()));
+        mail.set("date_processed", simpleDateFormat.format(calendar.getTime()));
+
+        mail.saveIt();
+    }
 
     /**
+     * MailQueue.queueEmail()
+     *
+     * Overloaded method for queueEmail()
      *
      * @param mail
      * @param lastCode
@@ -158,11 +241,14 @@ public class MailQueue {
     public static synchronized boolean queueEmail(QueuedMails mail, int lastCode, String lastMessage, int ipIndex, int mxIndex,
                            boolean ipv6Used, String bindingIPv4) {
 
-        return queueEmail(mail, lastCode, lastMessage, ipIndex, mxIndex, ipv6Used, bindingIPv4, "::1");
+        return queueEmail(mail, lastCode, lastMessage, ipIndex, mxIndex, ipv6Used, bindingIPv4, "");
     }
 
 
     /**
+     * MailQueue.queueEmail()
+     *
+     * Overloaded method for queueEmail()
      *
      * @param mail
      * @param lastCode
@@ -174,10 +260,13 @@ public class MailQueue {
     public static synchronized boolean queueEmail(QueuedMails mail, int lastCode, String lastMessage, int ipIndex, int mxIndex,
                            boolean ipv6Used) {
 
-        return queueEmail(mail, lastCode, lastMessage, ipIndex, mxIndex, ipv6Used, "0.0.0.0", "::1");
+        return queueEmail(mail, lastCode, lastMessage, ipIndex, mxIndex, ipv6Used, "", "");
     }
 
     /**
+     * MailQueue.queueEmail()
+     *
+     * Overloaded method for queueEmail()
      *
      * @param mail
      * @param lastCode
@@ -190,6 +279,9 @@ public class MailQueue {
     }
 
     /**
+     * MailQueue.queueEmail()
+     *
+     * Overloaded method for queueEmail()
      *
      * @param mail
      * @param lastCode
@@ -201,13 +293,16 @@ public class MailQueue {
     }
 
     /**
+     * MailQueue.queueEmail()
+     *
+     * Overloaded method for queueEmail()
      *
      * @param mail
      * @param lastCode
      * @param lastMessage
      */
     public static synchronized boolean queueEmail(QueuedMails mail, int lastCode, String lastMessage) {
-        return queueEmail(mail, lastCode, lastMessage, -1, -1);
+        return queueEmail(mail, lastCode, lastMessage, 0, 0);
     }
 
 }

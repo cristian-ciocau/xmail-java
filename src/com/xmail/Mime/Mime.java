@@ -150,10 +150,26 @@ public class Mime {
 
     };
 
+    /**
+     * Mime.generateBoundary()
+     *
+     * Generates boundary
+     *
+     * @param text
+     * @return
+     */
     public static String generateBoundary(String text) {
         return text + Integer.toString(++boundaryCount);
     }
 
+    /**
+     * Mime.encodeBase64()
+     *
+     * Encodes the given string to base64
+     *
+     * @param str
+     * @return
+     */
     public static String encodeBase64(String str) {
         final byte[] authBytes = str.getBytes(StandardCharsets.UTF_8);
         final String encoded = Base64.getEncoder().encodeToString(authBytes);
@@ -161,27 +177,137 @@ public class Mime {
         return encoded;
     }
 
+    /**
+     * Mime.encodeBase64()
+     *
+     * Encodes the given string to base64
+     *
+     * @param data
+     * @return
+     */
     public static String encodeBase64(byte[] data) {
         final String encoded = Base64.getEncoder().encodeToString(data);
 
         return encoded;
     }
 
+    /**
+     * Mime.getChunks()
+     *
+     * Encodes the given string to base64
+     *
+     * @param str
+     * @param chunkLength
+     * @param end
+     * @return
+     */
     public static String getChunks(String str, int chunkLength, String end) {
         String[] chunks = str.split("(?<=\\G.{" + chunkLength + "})");
 
         return String.join(end, chunks);
     }
 
+    /**
+     * Mime.getChunks()
+     *
+     * Encodes the given string to base64
+     *
+     * @param str
+     * @param chunkLength
+     * @return
+     */
     public static String getChunks(String str, int chunkLength) {
         return getChunks(str, chunkLength, "\r\n");
     }
 
+    /**
+     * Mime.getChunks()
+     *
+     * Encodes the given string to base64
+     *
+     * @param str
+     * @return
+     */
     public static String getChunks(String str) {
         return getChunks(str, 75, "\r\n");
     }
 
+    /**
+     * Mime.getMimeTypes()
+     *
+     * Return all Mime Types
+     *
+     * @return
+     */
     public static String[][] getMimeTypes() {
         return mimeTypes;
     }
+
+    /**
+     * Mime.composeDeliveryStatus()
+     *
+     * Compose the Delivery-Status attachment (RFC 3464)
+     *
+     * @param originalTo
+     * @param reportingMta
+     * @param remoteMta
+     * @param lastCode
+     * @param lastMessage
+     * @return
+     */
+    public static String composeDelivryStatus(String originalTo, String reportingMta, String remoteMta, int lastCode,
+                                              String lastMessage) {
+
+        String content = "";
+
+        // We are sending bounces just for failures
+        // RFC 3464
+        String action = "failed";
+
+        // We are sending for now just a permanent failure status with "Other undefined Status"
+        // RFC 3463
+        String status = "5.0.0";
+
+        content += "Reporting-MTA: dns; " + reportingMta + CRLF + CRLF;
+
+        content += "Final-Recipient: rfc822; " + originalTo + CRLF;
+        content += "Action: " + action + CRLF;
+        content += "Status: " + status + CRLF;
+
+        // If the sender reached the remote MTA
+        if(lastCode < 200) {
+            // We support just the dns type (http://tools.ietf.org/html/rfc3464#section-2.1.2)
+            String remoteMtaType = "dns";
+            content += "Remote-MTA: " + remoteMtaType + "; " + remoteMta + CRLF;
+        }
+
+        // We support just the smtp type
+        String diagnosticType = "smtp";
+
+        // And the dns type if we had error in connection
+        if(lastCode < 200) {
+            diagnosticType = "dns";
+        }
+        content += "Diagnostic-Code: " + diagnosticType + "; " + lastMessage;
+
+        return content;
+    }
+
+    /**
+     * Mime.composeHumanReport()
+     *
+     * Compose the bounce message for humans
+     *
+     * @param originalTo
+     * @param lastMessage
+     * @return
+     */
+    public static String composeHumanReport(String originalTo, String lastMessage) {
+        String humanReport= "The following message to <" + originalTo + "> was undeliverable." + CRLF;
+        humanReport += "The reason for the problem:" + CRLF;
+        humanReport += lastMessage;
+
+        return humanReport;
+    }
 }
+

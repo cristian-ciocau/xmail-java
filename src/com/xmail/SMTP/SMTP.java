@@ -87,7 +87,7 @@ public class SMTP {
 
             case 553:
 
-            // Spam?
+            //
             case 554:
 
             // I have been told not to work with you !!!

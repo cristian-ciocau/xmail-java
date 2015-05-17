@@ -14,6 +14,8 @@ public class AdvancedSender extends Sender {
     boolean ipv6Used = true;
     int mxIndex = 0;
 
+    String remoteMta;
+
     public String bindingIPv4 = null;
     public String bindingIPv6 = null;
 
@@ -30,6 +32,7 @@ public class AdvancedSender extends Sender {
     public int send(String to, String data) {
         String[] emailParts = to.split("@");
         String domain;
+        IpQueue ipQueue = IpQueue.getInstance();
 
         if(emailParts.length == 2) {
             domain = emailParts[1];
@@ -39,12 +42,12 @@ public class AdvancedSender extends Sender {
 
                 String[][] mxs = Dns.getMX(domain);
 
-                if(mxIndex > mxs.length) mxIndex = 0;
+                if(mxIndex >= mxs.length) mxIndex = 0;
 
                 for(; mxIndex < mxs.length; mxIndex++) {
 
                     if(XmailConfig.ipv6Enabled && ipv6Used) {
-                        if(bindingIPv6 == null) bindingIPv6 = IpQueue.getIpv6();
+                        if(bindingIPv6 == null) bindingIPv6 = ipQueue.getIpv6();
 
                         String[] ips6 = Dns.getAAAA(mxs[mxIndex][1]);
                         int ret = send2IP(to, data, ips6, bindingIPv6);
@@ -55,7 +58,7 @@ public class AdvancedSender extends Sender {
 
                     // Try to IPv4
                     ipv6Used = false;
-                    if(bindingIPv4 == null) bindingIPv4 = IpQueue.getIpv4();
+                    if(bindingIPv4 == null) bindingIPv4 = ipQueue.getIpv4();
                     String[] ips4 = Dns.getA(mxs[mxIndex][1]);
                     int ret = send2IP(to, data, ips4, bindingIPv4);
 
@@ -87,17 +90,21 @@ public class AdvancedSender extends Sender {
      */
     private int send2IP(String to, String data, String[] ips, String sourceIP) {
 
-        if(ipIndex > ips.length) ipIndex = 0;
+        if(ipIndex >= ips.length) ipIndex = 0;
 
         for(; ipIndex < ips.length; ipIndex++) {
+            remoteMta = ips[ipIndex];
+
             boolean status = sendMail(to, data, ips[ipIndex], sourceIP);
             if(status) return SMTP.SUCCESS;
 
             // parse the last code
-            int lastCode = SMTP.parseReturnCode(getLastCode());
+            int code = SMTP.parseReturnCode(getLastCode());
 
-            if(lastCode == SMTP.SERVER_NOT_FOUND) continue;
-            else return lastCode;
+            logger.debug("Last code=" + Integer.toString(getLastCode()));
+
+            if(code == SMTP.SERVER_NOT_FOUND) continue;
+            else return code;
         }
 
         // If tried all IPs without success...
@@ -191,5 +198,16 @@ public class AdvancedSender extends Sender {
      */
     public String getIpv6() {
         return bindingIPv6;
+    }
+
+    /**
+     * AdvancedSender.getRemoteMta()
+     *
+     * Returns the IP of the last MTA
+     *
+     * @return
+     */
+    public String getRemoteMta() {
+        return remoteMta;
     }
 }

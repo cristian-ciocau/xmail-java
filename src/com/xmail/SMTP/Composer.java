@@ -14,6 +14,18 @@ public class Composer {
 
     String CRLF = "\r\n";
 
+    /**
+     * Composer.compose()
+     *
+     * Compose the email (RFC 2045 and others)
+     *
+     * @param to
+     * @param subject
+     * @param message
+     * @param headers
+     * @param attachments
+     * @return
+     */
     public Map<String, String> compose(String to, String subject, String message, String headers, String[] attachments) {
 
         String content, html;
@@ -33,20 +45,16 @@ public class Composer {
         content += "--" + boundary2 + CRLF;
         content += "Content-Type: text/plain;" + CRLF;
         content += " charset=\"UTF-8\"" + CRLF;
-//        content += "Content-Transfer-Encoding: base64" + CRLF + CRLF;
-        content += "Content-Transfer-Encoding: quoted-printable" + CRLF + CRLF;
+        content += "Content-Transfer-Encoding: base64" + CRLF + CRLF;
 
         // Text part content
-        //content += chunk_split(base64_encode(trim(makePlain(message)))) + CRLF;
-//        content +=  Mime.getChunks(Mime.encodeBase64(makePlain(message))) + CRLF;
-        content +=  Mime.getChunks(makePlain(message)) + CRLF;
+        content +=  Mime.getChunks(Mime.encodeBase64(makePlain(message))) + CRLF;
 
         // HTML part headers
         content += "--" + boundary2 + CRLF;
         content += "Content-Type: text/html;" + CRLF;
         content += " charset=\"UTF-8\"" + CRLF;
-//        content += "Content-Transfer-Encoding: base64" + CRLF + CRLF;
-        content += "Content-Transfer-Encoding: quoted-printable" + CRLF + CRLF;
+        content += "Content-Transfer-Encoding: base64" + CRLF + CRLF;
 
         // HTML part content
         html  = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">" + CRLF;
@@ -55,8 +63,7 @@ public class Composer {
         html += message + CRLF;
         html += "</body>" + CRLF;
         html += "</html>" + CRLF;
-//        content += Mime.getChunks(Mime.encodeBase64(html)) + CRLF;
-        content += Mime.getChunks(html) + CRLF;
+        content += Mime.getChunks(Mime.encodeBase64(html)) + CRLF;
 
         // Content parts end
         content += "--" + boundary2 + "--" + CRLF + CRLF;
@@ -124,15 +131,103 @@ public class Composer {
         return ret;
     }
 
+    /**
+     * Composer.composeBounce()
+     *
+     * Composes the bounce message (RFC 6522)
+     *
+     * @param to
+     * @param humanReport
+     * @param deliveryStatus
+     * @param mailData
+     * @param from
+     * @return
+     */
+    public Map<String, String> composeBounce(String to, String humanReport, String deliveryStatus, String mailData,
+                                             String from) {
+
+        Map<String, String> ret = new HashMap<String, String>();
+        String headers = "", content = "";
+
+        // Generating boundaries
+        String boundary1 = Mime.generateBoundary("bounceciocau");
+        String boundary2 = Mime.generateBoundary("bounceciocau");
+
+        // Content parts start
+        content += "--" + boundary1 + CRLF;
+        content += "Content-Type: multipart/report; report-type=delivery-status;" + CRLF;
+        content += "\tboundary=\"" + boundary2 + "\"" + CRLF + CRLF;
+        content += "This is a MIME-formatted message." + CRLF;
+        content += "Portions of this message may be unreadable without a MIME-capable mail program." + CRLF + CRLF;
+
+        content += "--" + boundary2 + CRLF;
+        content += "Content-Type: text/plain; charset=UTF-8" + CRLF;
+        content += "Content-Transfer-Encoding: base64" + CRLF + CRLF;
+        content += Mime.getChunks(Mime.encodeBase64(humanReport)) + CRLF + CRLF;
+
+
+        content += "--" + boundary2 + CRLF;
+        content += "Content-Type: message/delivery-status" + CRLF + CRLF;
+        content += deliveryStatus + CRLF + CRLF;
+
+        content += "--" + boundary2 + CRLF;
+        content += "Content-Type: message/rfc822" + CRLF + CRLF;
+        content += mailData + CRLF;
+
+        content += "--" + boundary1 + "--";
+
+        // Add the MIME headers
+        headers += "From: " + from + CRLF;
+        headers += "Subject: Delivery Status Notification (Failure)" + CRLF;
+        headers += "To: " + to + CRLF;
+        headers += "Date: " + new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX").format(new Date()) + CRLF;
+        headers += "MIME-Version: 1.0" + CRLF;
+        headers += "Content-Type: multipart/mixed;" + CRLF;
+        headers += "\tboundary=\"" + boundary1 + "\"" + CRLF;
+
+        ret.put("headers", headers);
+        ret.put("content", content);
+        return ret;
+    }
+
+    /**
+     * Composer.compose()
+     *
+     * Overloaded method for compose()
+     *
+     * @param to
+     * @param subject
+     * @param message
+     * @return
+     */
     public Map<String, String> compose(String to, String subject, String message) {
         return compose(to, subject, message, "", new String[0]);
     }
 
+    /**
+     * Composer.compose()
+     *
+     * Overloaded method for compose()
+     *
+     * @param to
+     * @param subject
+     * @param message
+     * @param headers
+     * @return
+     */
     public Map<String, String> compose(String to, String subject, String message, String headers) {
         return compose(to, subject, message, headers, new String[0]);
     }
 
-    public String makePlain(String source) {
+    /**
+     * Compose.makePlain()
+     *
+     * Create the plain text from HTML
+     *
+     * @param source
+     * @return
+     */
+    private String makePlain(String source) {
 
         // change new lines to \n only
         source = source.replace("\r", "");
@@ -206,6 +301,14 @@ public class Composer {
         return source;
     }
 
+    /**
+     * Composer.getExtensionMime
+     *
+     * Get the Mime type by given file extension
+     *
+     * @param ext
+     * @return
+     */
     private String getExtensionMime(String ext) {
         // Default return octet-stream
         String ret = "application/octet-stream";

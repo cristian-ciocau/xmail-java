@@ -19,6 +19,11 @@ public class XmailService implements ThreadCompleteListener {
 
     boolean shutdown = false;
 
+    /**
+     * XmailService.start()
+     *
+     * Starts the email processing
+     */
     public void start() {
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -42,10 +47,13 @@ public class XmailService implements ThreadCompleteListener {
         }));
 
         // Initialize the Mail Queue
-        MailQueue.init(XmailConfig.dbPath);
+        MailQueue queue = MailQueue.getInstance();
+        queue.init(XmailConfig.dbPath);
+        queue.open();
 
         // Initialize the outgoing IP addresses queue
-        IpQueue.init(XmailConfig.outgoingIPv4, XmailConfig.outgoingIPv6);
+        IpQueue ipQueue = IpQueue.getInstance();
+        ipQueue.init(XmailConfig.outgoingIPv4, XmailConfig.outgoingIPv6);
 
         logger.info("XmailService started.");
 
@@ -60,7 +68,7 @@ public class XmailService implements ThreadCompleteListener {
                 break;
             }
 
-            List<QueuedMails> mails = MailQueue.getEmails(XmailConfig.maxSmtpThreads);
+            List<QueuedMails> mails = queue.getEmails(XmailConfig.maxSmtpThreads);
             for (QueuedMails mail : mails) {
 
                 if (runningSmtpThreads < XmailConfig.maxSmtpThreads) {
@@ -88,8 +96,17 @@ public class XmailService implements ThreadCompleteListener {
                 Thread.currentThread().interrupt();
             }
         }
+
+        queue.close();
     }
 
+    /**
+     * XmailService.notifyOfThreadComplete()
+     *
+     * Receives notifications from the finished threads
+     *
+     * @param finishedThread
+     */
     public void notifyOfThreadComplete(Thread finishedThread) {
         runningSmtpThreads--;
         logger.info("End.");

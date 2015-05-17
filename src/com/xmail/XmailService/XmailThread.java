@@ -18,21 +18,25 @@ public class XmailThread extends NotifyingThread {
     int mailId;
 
     /**
+     * XmailThread.doRun()
+     *
+     * Sends a new or queued email
      *
      */
     public void doRun() {
         final String to, data;
         String mail_path = "";
-        int status = SMTP.UNKNOWN_ERROR;
+        int status;
         QueuedMails mail = null;
 
         logger.info("Start sending email...");
 
+        MailQueue queue = MailQueue.getInstance();
+        queue.open();
 
         try {
 
-            MailQueue.init(XmailConfig.dbPath);
-            mail = MailQueue.getEmail(mailId);
+            mail = queue.getEmail(mailId);
 
             to = mail.get("mail_to").toString();
             mail_path = mail.get("email_path").toString();
@@ -60,7 +64,7 @@ public class XmailThread extends NotifyingThread {
             }
 
             // if the last error was occurred during wrapping socket for TLS, skip TLS this time
-            if(mail.get("last_code").toString() == "105") {
+            if(Integer.parseInt(mail.get("last_code").toString()) == 105) {
                 sender.disableTls();
             }
 
@@ -69,29 +73,41 @@ public class XmailThread extends NotifyingThread {
 
             if (status == SMTP.SUCCESS) {
                 // okay
-                MailQueue.deleteEmail(mail);
+                queue.deleteEmail(mail);
                 logger.info("Email was sent okay.");
             }
             else if(status == SMTP.MAILBOX_NOT_EXISTS || status == SMTP.PERMANENT_ERROR) {
+
                 // send bounce
+                XmailBounce bounce = new XmailBounce();
+                bounce.sendBounce(mail.get("mail_from").toString(), mail.get("mail_to").toString(), mail_path,
+                        sender.getLastCode(), sender.getLastMessage(), Integer.parseInt(mail.get("retry").toString()),
+                        sender.getRemoteMta());
 
                 // remove the file from disk
-                MailQueue.deleteEmail(mail);
+                queue.deleteEmail(mail);
 
                 logger.info("Email could not be delivered. Not queued.");
             }
             else {
                 // check the log and queue if necessarily
-                if(!MailQueue.queueEmail(mail, sender.getLastCode(), sender.getLastMessage(), sender.getIpIndex(),
+                if(queue.queueEmail(mail, sender.getLastCode(), sender.getLastMessage(), sender.getIpIndex(),
                         sender.getMxIndex(), sender.isIpv6Used(), sender.getIpv4(), sender.getIpv6())) {
 
-                    // send the bounce
+                    logger.info("Email could not be delivered. Queued.");
                 }
+                else {
+                    // send bounce
+                    XmailBounce bounce = new XmailBounce();
+                    bounce.sendBounce(mail.get("mail_from").toString(), mail.get("mail_to").toString(), mail_path,
+                            sender.getLastCode(), sender.getLastMessage(), Integer.parseInt(mail.get("retry").toString()),
+                            sender.getRemoteMta());
 
-                // avoid adding again this mail to queue
-                mail = null;
+                    // remove the file from disk
+                    queue.deleteEmail(mail);
 
-                logger.info("Email could not be delivered. Queued.");
+                    logger.info("Email could not be delivered. Status code= " + Integer.toString(status) + ". Not queued.");
+                }
             }
 
         } catch (IOException e) {
@@ -101,18 +117,17 @@ public class XmailThread extends NotifyingThread {
             logger.error("Unknown error occurred during sending email: " + e.getMessage());
         }
         finally {
-            // queue it?
-            if(status != SMTP.SUCCESS && mail != null) {
-                logger.error("Mail could not be delivered. Internal error");
-                if(!MailQueue.queueEmail(mail, 999, "internal error")) {
-                    // send the bounce
-                }
-            }
+
+            queue.close();
         }
 
     }
 
     /**
+     * XmailThread.addMailId()
+     *
+     * This method is used the parent thread in order to pass information
+     * about the email which needs to be processed
      *
      * @param id
      */

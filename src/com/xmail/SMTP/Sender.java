@@ -52,7 +52,7 @@ public class Sender {
     /**
      * Sender.sendMail()
      *
-     *
+     * Sends the email to the given MX using the outgoing sourceIP
      *
      * @param to
      * @param data
@@ -113,7 +113,7 @@ public class Sender {
                 }
 
                 // Add the SIZE to MAIL command
-                sizeCommand = " SIZE " + Integer.toString(data.length());
+                sizeCommand = " SIZE=" + Integer.toString(data.length());
             }
 
             // Send sender
@@ -139,6 +139,11 @@ public class Sender {
             break;
         }
         // so everything breaks the loop finishes with QUIT
+
+        if(lastCode != 250 || lastCode != 220) {
+            close();
+            return false;
+        }
 
         // Send QUIT
         if (!smtpWrite("QUIT" + CRLF)) return false;
@@ -226,9 +231,9 @@ public class Sender {
                 tries++;
                 if (tries > 20) {
                     logger.error("Too many lines received from server.");
-                    lastCode = READ_ERROR;
-                    lastMessage = "Too many lines received from server.";
-                    return 0;
+                    lastCode = 554;
+                    lastMessage = "Mail loop detected";
+                    return READ_ERROR;
                 }
 
                 // Check for STARTTLS command
@@ -249,21 +254,21 @@ public class Sender {
         } catch (IOException e) {
             logger.error("SOCKET READ: IOException:  " + e);
             lastCode = READ_ERROR;
-            lastMessage = "Socket read IOException: " + e;
-            return 0;
+            lastMessage = "Error reading from MTA.";
+            return READ_ERROR;
         }
         catch (NullPointerException e) {
             logger.error("SOCKET Read: NullPointerException:  " + e);
             lastCode = READ_ERROR;
-            lastMessage = "Socket read: NullPointerException: " + e;
-            return 0;
+            lastMessage = "Error reading from MTA.";
+            return READ_ERROR;
         }
 
         if (response == null) {
             logger.error("ERROR RESPONSE: Could not get mail server response codes.");
             lastCode = READ_ERROR;
             lastMessage = "Could not get mail server response codes.";
-            return 0;
+            return READ_ERROR;
         }
 
         // Log  error if expected code not received
@@ -272,7 +277,7 @@ public class Sender {
                     ".. but expected: " + Integer.toString(expected));
             lastCode = Integer.parseInt(response.substring(0, 3));
             lastMessage = response.substring(3);
-            close();
+            return lastCode;
         }
 
         // Access denied... Quit
@@ -280,6 +285,7 @@ public class Sender {
             logger.error("ERROR QUIT: Server declined access. Quitting.");
             lastCode = ACCESS_DENIED;
             lastMessage = "Server declined access. Quitting.";
+            return ACCESS_DENIED;
         }
 
         lastCode = Integer.parseInt(response.substring(0, 3));
@@ -371,6 +377,9 @@ public class Sender {
     }
 
     /**
+     * Sender.disableTls()
+     *
+     * Disables the TLS command (used by the email queue mechanism)
      *
      */
     public void disableTls() {
