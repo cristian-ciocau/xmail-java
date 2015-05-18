@@ -68,10 +68,13 @@ A singleton static class used to implement a pool of outgoing (binding) IP addre
 This is helpful if you have many IP addresses bound to your server and you want to use them balanced (Round Robin).
 
 # How to test
-In order to test **xmail-java**, you need to do few edits in [XmailConfig]():
-1. Change the path where the SQLite database will be saved on disk ```public static String dbPath = "/Data/git/xmail-java/data/data.db";```. You should provide a read/write access to that file.
-2. Change the remote SMTP port ```public static int port = 25;```. Some ISPs blocks the default 25 port. Some MTA provide an alternative port for SMTP, like port 26. You can also try the nonstandard submission 587 port (if the MTA doesn't require authenitcation on it).
-3. Add the binded IP addresses to your machine (if you support this):
+1. In order to test **xmail-java**, you need to do few edits in [XmailConfig]():
+
+1.1. Change the path where the SQLite database will be saved on disk ```public static String dbPath = "/Data/git/xmail-java/data/data.db";```. You should provide a read/write access to that file.
+
+1.2. Change the remote SMTP port ```public static int port = 25;```. Some ISPs blocks the default 25 port. Some MTA provide an alternative port for SMTP, like port 26. You can also try the nonstandard submission 587 port (if the MTA doesn't require authenitcation on it).
+
+1.3. Add the binded IP addresses to your machine (if you support this):
 ```
 public static String[] outgoingIPv4 = new String[] {
   "0.0.0.0",
@@ -81,7 +84,8 @@ public static String[] outgoingIPv6 = new String[] {
 };
 public static boolean ipv6Enabled = false;
 ```
-4. Edit the [ComposerTest](https://github.com/tntu/xmail-java/blob/master/tests/com/tests/ComposerTest.java) file.
+
+2. Edit the [ComposerTest](https://github.com/tntu/xmail-java/blob/master/tests/com/tests/ComposerTest.java) file.
 ```
 String from = "from@example.com";
 
@@ -91,7 +95,8 @@ String message = "<p>Hi there!!</p><p>How are you?</p><p><br/></p><p>I hope to r
 String headers = "From: <from@example.com>";
 String[] attachments = new String[] {};
 ```
-5. Run The com.tests/Main.java for few times and after you can start the service com.xmail/Main.java. You can also run the tests during the service process is running.
+
+3. Run The com.tests/Main.java for few times and after you can start the service com.xmail/Main.java. You can also run the tests during the service process is running.
 
 # Other requirements
 This library requires log4j and activejdbc.
