@@ -78,7 +78,7 @@ This is helpful if you have many IP addresses bound to your server and you want 
 1.3. Change the remote SMTP port ```public static int port = 25;```. Some ISPs blocks the default 25 port. Some MTA provide an alternative port for SMTP, like port 26. You can also try the nonstandard submission 587 port (if the MTA doesn't require authenitcation on it).
 
 1.4. Add the bound IP addresses to your machine (if you support this):
-=======
+
 1.1. Change the path where the SQLite database will be saved on disk ```public static String dbPath = "/Data/git/xmail-java/data/data.db";```. You should provide a read/write access to that file.
 
 1.2. Change the remote SMTP port ```public static int port = 25;```. Some ISPs blocks the default 25 port. Some MTA provide an alternative port for SMTP, like port 26. You can also try the nonstandard submission 587 port (if the MTA doesn't require authenitcation on it).
@@ -109,8 +109,5 @@ String[] attachments = new String[] {};
 3. Run The com.tests/Main.java for few times and after you can start the service com.xmail/Main.java. You can also run the tests during the service process is running.
 
 # Other requirements
-<<<<<<< HEAD
 This library requires [Apache log4j](http://logging.apache.org/log4j/1.2/) and [ActiveJDBC](http://javalite.io/activejdbc).
-=======
-This library requires log4j and activejdbc.
->>>>>>> b769d8d559749700c369d714c65d3a5f95a99980
+
