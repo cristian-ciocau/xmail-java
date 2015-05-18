@@ -59,25 +59,25 @@ This small project aims to demonstrate how to properly deliver emails according 
   2. Change the path where the emails will be stored on disk ```public static String mailPath = "/path/to/xmail-java/mail/";```. You should provide a read/write access to that file.
   3. Change the remote SMTP port ```public static int port = 25;```. Some ISPs blocks the default 25 port. Some MTA provide an alternative port for SMTP, like port 26. You can also try the nonstandard submission 587 port (if the MTA doesn't require authenitcation on it).
   4. Add the bound IP addresses to your machine (if you support this):
-  ```
-  public static String[] outgoingIPv4 = new String[] {
-    "0.0.0.0",
-  };
-  public static String[] outgoingIPv6 = new String[] {
-    "::1",
-  };
-  public static boolean ipv6Enabled = false;
-  ```
+    ```
+    public static String[] outgoingIPv4 = new String[] {
+      "0.0.0.0",
+    };
+    public static String[] outgoingIPv6 = new String[] {
+      "::1",
+    };
+    public static boolean ipv6Enabled = false;
+    ```
 2. Edit the [ComposerTest](https://github.com/tntu/xmail-java/blob/master/tests/com/tests/ComposerTest.java) file.
-```
-String from = "from@example.com";
+  ```
+  String from = "from@example.com";
 
-String to = "to@example.com";
-String subject = "Cool Test message";
-String message = "<p>Hi there!!</p><p>How are you?</p><p><br/></p><p>I hope to receive well this message</p>";
-String headers = "From: <from@example.com>";
-String[] attachments = new String[] {};
-```
+  String to = "to@example.com";
+  String subject = "Cool Test message";
+  String message = "<p>Hi there!!</p><p>How are you?</p><p><br/></p><p>I hope to receive well this message</p>";
+  String headers = "From: <from@example.com>";
+  String[] attachments = new String[] {};
+  ```
 3. Run The com.tests/Main.java for few times and after you can start the service com.xmail/Main.java. You can also run the tests during the service process is running.
 
 # Other requirements
