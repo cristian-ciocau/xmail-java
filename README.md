@@ -26,7 +26,7 @@ This small project aims to demonstrate how to properly deliver emails according 
 
 4.1. If not, it will cancel the sending and it will send the bounce message.
 
-4.1.2. If the email does not exceed the advertised size the MAIL command will be extended with the SIZE parameter to announce what size of email it wants to deliver.
+4.2. If the email does not exceed the advertised size the MAIL command will be extended with the SIZE parameter to announce what size of email it wants to deliver.
 
 5. After sending, it will check the response received from server. If the email could not be delivered, it will check if it was a connection problem, or a temporary or permanent error from MTA. If the error was just temporary (connection or received from MTA), the email will be queued
 
@@ -77,12 +77,6 @@ This is helpful if you have many IP addresses bound to your server and you want 
 1.3. Change the remote SMTP port ```public static int port = 25;```. Some ISPs blocks the default 25 port. Some MTA provide an alternative port for SMTP, like port 26. You can also try the nonstandard submission 587 port (if the MTA doesn't require authenitcation on it).
 
 1.4. Add the bound IP addresses to your machine (if you support this):
-
-1.1. Change the path where the SQLite database will be saved on disk ```public static String dbPath = "/Data/git/xmail-java/data/data.db";```. You should provide a read/write access to that file.
-
-1.2. Change the remote SMTP port ```public static int port = 25;```. Some ISPs blocks the default 25 port. Some MTA provide an alternative port for SMTP, like port 26. You can also try the nonstandard submission 587 port (if the MTA doesn't require authenitcation on it).
-
-1.3. Add the bound IP addresses to your machine (if you support this):
 ```
 public static String[] outgoingIPv4 = new String[] {
   "0.0.0.0",
