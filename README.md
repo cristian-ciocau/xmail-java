@@ -5,17 +5,19 @@ This small project aims to demonstrate how to properly deliver emails according 
 
 # How it works
 1. The Composer class is used to compose and add an email to the queue.
+
 2. A queue service that is contained within this library will pick any emails in the queue and try to deliver them.
-  2.1. The queue will attempt to deliver only when it has enough free slots to open a new thread.
-  2.2. If it is the first attempt to deliver an email it will choose the next available IP and a next available MX for delivery in order to balance the load between outbound IP's and recipient MX servers at high load.
-  2.2.1. If the email was queued before, it will check what wore the errors or previous deliveries and try to adapt to avoid them if possible.
-  2.2.2. In case of failure it will not just try to adapt itself but also pick another MX server for the recipient domain if available.
+  1. The queue will attempt to deliver only when it has enough free slots to open a new thread
+  2. If it is the first attempt to deliver an email it will choose the next available IP and a next available MX for delivery in order to balance the load between outbound IP's and recipient MX servers at high load.
+    1. If the email was queued before, it will check what wore the errors or previous deliveries and try to adapt to avoid them if possible.
+    2. In case of failure it will not just try to adapt itself but also pick another MX server for the recipient domain if available.
 3. By default it will attempt to use **ESMTP** but with fallback to **SMTP** in case of error.
-  3.1. In case of ESMTP and **TLS** support it will attempt to secure the connection.
-  3.1.1. If a failure occurs the email will be re-queued and the next attempt will not try to STARTTLS.
+  1. In case of ESMTP and **TLS** support it will attempt to secure the connection.
+  2. If a failure occurs the email will be re-queued and the next attempt will not try to STARTTLS.
 4. If the MTA has advertised **SIZE** it will check if the email size is allowed by server.
-  4.1. If not, it will cancel the sending and it will send the bounce message.
-  4.2. If the email does not exceed the advertised size the MAIL command will be extended with the SIZE parameter to announce what size of email it wants to deliver.
+  1. If not, it will cancel the sending and it will send the bounce message.
+  2. If the email does not exceed the advertised size the MAIL command will be extended with the SIZE parameter to announce what size of email it wants to deliver.
+
 5. After sending, it will check the response received from server. If the email could not be delivered, it will check if it was a connection problem, or a temporary or permanent error from MTA. If the error was just temporary (connection or received from MTA), the email will be queued
 6. If the limit of attempts was reached, the email will be deleted from the queue and a bounce message will be sent.
 7. If there was a permanent error or no MX's wore found or a connection to the MTA was not established the email will not be queued and the bounce message will be sent.
@@ -53,14 +55,10 @@ This small project aims to demonstrate how to properly deliver emails according 
 
 # How to test
 1. In order to test **xmail-java**, you need to do few edits in [XmailConfig]():
-
-  1.1. Change the path where the SQLite database will be saved on disk ```public static String dbPath = "/path/to/xmail-java/data/data.db";```. You should provide a read/write access to that file.
-
-  1.2. Change the path where the emails will be stored on disk ```public static String mailPath = "/path/to/xmail-java/mail/";```. You should provide a read/write access to that file.
-
-  1.3. Change the remote SMTP port ```public static int port = 25;```. Some ISPs blocks the default 25 port. Some MTA provide an alternative port for SMTP, like port 26. You can also try the nonstandard submission 587 port (if the MTA doesn't require authenitcation on it).
-
-  1.4. Add the bound IP addresses to your machine (if you support this):
+  1. Change the path where the SQLite database will be saved on disk ```public static String dbPath = "/path/to/xmail-java/data/data.db";```. You should provide a read/write access to that file.
+  2. Change the path where the emails will be stored on disk ```public static String mailPath = "/path/to/xmail-java/mail/";```. You should provide a read/write access to that file.
+  3. Change the remote SMTP port ```public static int port = 25;```. Some ISPs blocks the default 25 port. Some MTA provide an alternative port for SMTP, like port 26. You can also try the nonstandard submission 587 port (if the MTA doesn't require authenitcation on it).
+  4. Add the bound IP addresses to your machine (if you support this):
 ```
 public static String[] outgoingIPv4 = new String[] {
   "0.0.0.0",
