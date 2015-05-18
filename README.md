@@ -22,7 +22,7 @@ This small project aims to demonstrate how to properly deliver emails according 
 6. If the limit of attempts was reached, the email will be deleted from the queue and a bounce message will be sent.
 7. If there was a permanent error or no MX's wore found or a connection to the MTA was not established the email will not be queued and the bounce message will be sent.
 8. The thread will end here and it will notify the main thread about this.
-9. If the SIGTERM or SIGINT will be received from the main thread, all the threads will be notified about this and the main process will stop after all current running jobs are gracefully finished.
+9. If the **SIGTERM** or **SIGINT** will be received from the main thread, all the threads will be notified about this and the main process will stop after all current running jobs are gracefully finished.
 
 # Highlits
 
@@ -59,15 +59,15 @@ This small project aims to demonstrate how to properly deliver emails according 
   2. Change the path where the emails will be stored on disk ```public static String mailPath = "/path/to/xmail-java/mail/";```. You should provide a read/write access to that file.
   3. Change the remote SMTP port ```public static int port = 25;```. Some ISPs blocks the default 25 port. Some MTA provide an alternative port for SMTP, like port 26. You can also try the nonstandard submission 587 port (if the MTA doesn't require authenitcation on it).
   4. Add the bound IP addresses to your machine (if you support this):
-```
-public static String[] outgoingIPv4 = new String[] {
-  "0.0.0.0",
-};
-public static String[] outgoingIPv6 = new String[] {
-  "::1",
-};
-public static boolean ipv6Enabled = false;
-```
+  ```
+  public static String[] outgoingIPv4 = new String[] {
+    "0.0.0.0",
+  };
+  public static String[] outgoingIPv6 = new String[] {
+    "::1",
+  };
+  public static boolean ipv6Enabled = false;
+  ```
 2. Edit the [ComposerTest](https://github.com/tntu/xmail-java/blob/master/tests/com/tests/ComposerTest.java) file.
 ```
 String from = "from@example.com";
