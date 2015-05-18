@@ -27,7 +27,7 @@ public class XmailThread extends NotifyingThread {
         final String to, data;
         String mail_path = "";
         int status;
-        QueuedMails mail = null;
+        QueuedMails mail;
 
         logger.info("Start sending email...");
 

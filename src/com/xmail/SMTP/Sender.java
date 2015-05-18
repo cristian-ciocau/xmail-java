@@ -104,7 +104,7 @@ public class Sender {
             }
 
             // if the server advertised SIZE in EHLO
-            if (isSize) {
+            if (isSize && !heloUsed) {
                 // The mail is bigger than server advertised
                 if (mailSize > 0 && mailSize < data.length()) {
                     lastCode = SIZE_ERROR;

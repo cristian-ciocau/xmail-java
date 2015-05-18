@@ -17,20 +17,19 @@ class ComposerTest {
 
     public void run() {
 
-        String from = "cristian@mailwhere.com";
+        String from = "from@example.com";
 
-        String to = "vlad@spreculmi.com";
+        String to = "to@example.com";
         String subject = "Cool Test message";
         String message = "<p>Hi there!!</p><p>How are you?</p><p><br/></p><p>I hope to receive well this message</p>";
-        String headers = "From: <cristian@mailwhere.com>";
+        String headers = "From: <from@example.com>";
         String[] attachments = new String[] {};
 
         try {
             Composer composer = new Composer();
             Map<String, String> mail = composer.compose(to, subject, message, headers, attachments);
-            // assertEquals("", myClass.compose(to, subject, message, headers, attachments));
 
-            File file = File.createTempFile("xmail", ".eml", new File("/Data/git/xmail-java/mail/"));
+            File file = File.createTempFile("xmail", ".eml", new File(XmailConfig.mailPath));
             String mailPath = file.getAbsolutePath();
 
             FileUtils.putFileContents(file, mail.get("headers") + "\r\n" + mail.get("content"));
