@@ -22,7 +22,7 @@ class ComposerTest {
         String to = "to@example.com";
         String subject = "Cool Test message";
         String message = "<p>Hi there!!</p><p>How are you?</p><p><br/></p><p>I hope to receive well this message</p>";
-        String headers = "From: <cristian@mailwhere.com>";
+        String headers = "From: <from@example.com>";
         String[] attachments = new String[] {};
 
         try {
