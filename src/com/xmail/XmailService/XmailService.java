@@ -29,7 +29,10 @@ public class XmailService {
 
         // Initialize the Mail Queue
         MailQueue queue = MailQueue.getInstance();
-        queue.init(XmailConfig.dbPath);
+        if(!queue.init(XmailConfig.dbPath)) {
+            logger.error("Could not create the database.");
+            return;
+        }
         if(!queue.open()) {
             logger.error("Could not open the database");
             return;

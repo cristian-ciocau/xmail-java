@@ -50,8 +50,17 @@ public class XmailBounce {
 
             FileUtils.putFileContents(file, mail.get("headers") + "\r\n" + mail.get("content"));
 
-            MailQueue.init(XmailConfig.dbPath);
-            MailQueue.addEmail(to, from, mailPath);
+            MailQueue queue = MailQueue.getInstance();
+            if(!queue.init(XmailConfig.dbPath)) {
+                logger.error("Could not create the database.");
+                return false;
+            }
+            if(!queue.open()) {
+                logger.error("Could not connect to database.");
+                return false;
+            }
+            queue.addEmail(to, from, mailPath);
+            queue.close();
         }
         catch (IOException e) {
             logger.error("Bounce preparing error: " + e.getMessage());

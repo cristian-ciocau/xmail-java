@@ -36,7 +36,10 @@ class ComposerTest {
 
             MailQueue queue = MailQueue.getInstance();
             queue.init(XmailConfig.dbPath);
-            queue.open();
+            if(!queue.open()) {
+                System.out.println("Could not connect to database.");
+                return;
+            }
             queue.addEmail(to, from, mailPath);
             queue.close();
         }

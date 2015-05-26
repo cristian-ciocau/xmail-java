@@ -4,6 +4,8 @@ import com.xmail.IO.FileUtils;
 import com.xmail.XmailService.Models.QueuedMails;
 import org.javalite.activejdbc.Base;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -45,8 +47,24 @@ public class MailQueue {
      *
      * @param path path to SQLite database
      */
-    public static synchronized void init(String path) {
-        dbPath = path;
+    public static synchronized boolean init(String path) {
+
+        try {
+            File dbFile = new File(path);
+            if (!dbFile.exists()) {
+                dbFile.createNewFile();
+            }
+            if(!dbFile.canRead()) {
+                dbFile.delete();
+                dbFile.createNewFile();
+            }
+            dbPath = dbFile.getAbsolutePath();
+        }
+        catch(IOException e) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -56,7 +74,7 @@ public class MailQueue {
      */
     public static synchronized boolean open() {
         try {
-            Base.open("org.sqlite.JDBC", "jdbc:sqlite:" + dbPath, "", "");
+            Base.open("org.sqlite.JDBC", "jdbc:sqlite:" + dbPath + "", "", "");
             createQueue();
         }
         catch(Exception e) {
@@ -67,7 +85,9 @@ public class MailQueue {
     }
 
     /**
+     * MailQueue.close()
      *
+     * Close the Database connection
      */
     public static synchronized void close() {
         try {
