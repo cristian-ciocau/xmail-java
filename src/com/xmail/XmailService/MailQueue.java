@@ -54,16 +54,28 @@ public class MailQueue {
      *
      * Open the Database connection
      */
-    public static synchronized void open() {
-        Base.open("org.sqlite.JDBC", "jdbc:sqlite:" + dbPath, "", "");
-        createQueue();
+    public static synchronized boolean open() {
+        try {
+            Base.open("org.sqlite.JDBC", "jdbc:sqlite:" + dbPath, "", "");
+            createQueue();
+        }
+        catch(Exception e) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
      *
      */
     public static synchronized void close() {
-        Base.close();
+        try {
+            Base.close();
+        }
+        catch(Exception e) {
+
+        }
     }
 
     /**
@@ -303,6 +315,26 @@ public class MailQueue {
      */
     public static synchronized boolean queueEmail(QueuedMails mail, int lastCode, String lastMessage) {
         return queueEmail(mail, lastCode, lastMessage, 0, 0);
+    }
+
+    /**
+     * MailQueue.changeEmailStatus()
+     *
+     * Changes the email status between waiting | processing
+     *
+     * @param mail
+     * @param status
+     * @return
+     */
+    public static synchronized  boolean changeEmailStatus(QueuedMails mail, int status) {
+        try {
+            mail.set("status", status).saveIt();
+        }
+        catch (Exception e) {
+            return false;
+        }
+
+        return true;
     }
 
 }

@@ -11,7 +11,7 @@ This small project aims to demonstrate how to properly deliver emails according 
   2. If it is the first attempt to deliver an email it will choose the next available IP and a next available MX for delivery in order to balance the load between outbound IP's and recipient MX servers at high load.
     1. If the email was queued before, it will check what wore the errors or previous deliveries and try to adapt to avoid them if possible.
     2. In case of failure it will not just try to adapt itself but also pick another MX server for the recipient domain if available.
-3. By default it will attempt to use **ESMTP** but with fallback to **SMTP** in case of error.
+3. By default it will attempt to use **ESMTP** but with fall back to **SMTP** in case of error.
   1. In case of ESMTP and **TLS** support it will attempt to secure the connection.
   2. If a failure occurs the email will be re-queued and the next attempt will not try to STARTTLS.
 4. If the MTA has advertised **SIZE** it will check if the email size is allowed by server.
@@ -46,12 +46,22 @@ This small project aims to demonstrate how to properly deliver emails according 
   We also experienced bad recipient MX records and thus never take a rejection as final until you attempt once more to another MX.
 
 4. [NotifyingThread](https://github.com/tntu/xmail-java/blob/master/src/com/xmail/Threads/NotifyingThread.java) and [ThreadCompleteListener](https://github.com/tntu/xmail-java/blob/master/src/com/xmail/Threads/ThreadCompleteListener.java) Classes
-  A nice method to keep the count of running threads specialised for a kind of job.
+  A nice method to keep the count of running threads specialized for a kind of job.
   This is helpful if you want to have a given number of workers which will process a queue.
 
 5. [IpQueue Class](https://github.com/tntu/xmail-java/blob/master/src/com/xmail/XmailService/IpQueue.java)
   A singleton static class used to implement a pool of outgoing (binding) IP addresses.
   This is helpful if you have many IP addresses bound to your server and you want to use them balanced (Round Robin).
+  
+# IntelliJ - Before to Run
+You must add a Maven Goal for com.xmail.Main and for com.tests.Main as follow:
+1. **Run** -> **Edit Configurations**
+2. Select **Main** from **Applications** on the left
+3. In **Before Launch** area click on "+" and select **Run Maven Goal**
+4. Add the next code to **Command line** field: ```org.javalite:activejdbc-instrumentation:1.4.10:instrument```
+5. Do the same thing for **Tests** (com.xmail.tests.Main)
+
+For a better understanding, please watch this video: [https://www.youtube.com/watch?v=OHXJXzZNKCU](https://www.youtube.com/watch?v=OHXJXzZNKCU) or read the documentation: [Javalite.io instrumentation for IntelliJ](http://javalite.io/instrumentation#video-intellij-idea-instrumentation)
 
 # How to test
 1. In order to test **xmail-java**, you need to do few edits in [XmailConfig]():

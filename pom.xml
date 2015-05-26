@@ -3,10 +3,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.javalite</groupId>
-    <artifactId>active-jdbc</artifactId>
+    <groupId>com.xmail</groupId>
+    <artifactId>xmail-java</artifactId>
     <version>1.0</version>
-    <name>ActiveJDBC</name>
+    <name>Xmail Java</name>
     <packaging>jar</packaging>
 
     <properties>
@@ -32,18 +32,12 @@
 
         </plugins>
     </build>
-    <dependencies>
 
+    <dependencies>
         <dependency>
             <groupId>org.javalite</groupId>
             <artifactId>activejdbc</artifactId>
             <version>${activejdbc.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>opensymphony</groupId>
-                    <artifactId>oscache</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -51,6 +45,6 @@
             <artifactId>log4j</artifactId>
             <version>1.2.16</version>
         </dependency>
-
     </dependencies>
+
 </project>

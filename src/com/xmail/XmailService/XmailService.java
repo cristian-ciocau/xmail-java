@@ -30,7 +30,10 @@ public class XmailService {
         // Initialize the Mail Queue
         MailQueue queue = MailQueue.getInstance();
         queue.init(XmailConfig.dbPath);
-        queue.open();
+        if(!queue.open()) {
+            logger.error("Could not open the database");
+            return;
+        }
 
         // Initialize the outgoing IP addresses queue
         IpQueue ipQueue = IpQueue.getInstance();
@@ -49,44 +52,50 @@ public class XmailService {
                 break;
             }
 
-            List<QueuedMails> mails = queue.getEmails(XmailConfig.maxSmtpThreads);
-            for (final QueuedMails mail : mails) {
+            try {
+                List<QueuedMails> mails = queue.getEmails(XmailConfig.maxSmtpThreads);
+                for (final QueuedMails mail : mails) {
 
-                if (smtpThreadsList.size() < XmailConfig.maxSmtpThreads) {
+                    if (smtpThreadsList.size() < XmailConfig.maxSmtpThreads) {
 
-                    mail.set("status", 1).saveIt();
+                        if (!queue.changeEmailStatus(mail, 1)) {
+                            logger.error("Can not mark email for processing (db write error).");
+                            continue;
+                        }
 
-                    Thread newThread = new Thread() {
-                        @Override
-                        public void run() {
-                            synchronized (smtpThreadsList) {
-                                smtpThreadsList.add(this);
-                            }
-
-                            try {
-                                XmailWorker worker = new XmailWorker();
-                                worker.process((Integer) mail.get("id"));
-                            }
-                            finally {
+                        Thread newThread = new Thread() {
+                            @Override
+                            public void run() {
                                 synchronized (smtpThreadsList) {
-                                    smtpThreadsList.remove(this);
+                                    smtpThreadsList.add(this);
+                                }
+
+                                try {
+                                    XmailWorker worker = new XmailWorker();
+                                    worker.process((Integer) mail.get("id"));
+                                } finally {
+                                    synchronized (smtpThreadsList) {
+                                        smtpThreadsList.remove(this);
+                                    }
                                 }
                             }
-                        }
-                    };
-                    newThread.setDaemon(true);
-                    newThread.start();
+                        };
+                        newThread.setDaemon(true);
+                        newThread.start();
 
+                    } else {
+                        logger.info("Maximum of concurrent running SMTP threads reached...");
+                    }
                 }
-                else {
-                    logger.info("Maximum of concurrent running SMTP threads reached...");
-                }
-            }
 
-            try {
+                // Sleep a while
                 Thread.sleep(XmailConfig.loopTime * 1000);
-            } catch(InterruptedException ex) {
+            }
+            catch(InterruptedException ex) {
                 Thread.currentThread().interrupt();
+            }
+            catch (Exception e) {
+                logger.error("Unknown error occurred during email queue processing: " + e.getMessage());
             }
         }
 

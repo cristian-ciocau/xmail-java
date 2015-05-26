@@ -30,7 +30,10 @@ public class XmailWorker extends Thread {
         logger.info("Start sending email...");
 
         MailQueue queue = MailQueue.getInstance();
-        queue.open();
+        if(!queue.open()) {
+            logger.error("Could not open the database");
+            return;
+        }
 
         try {
 
@@ -111,7 +114,7 @@ public class XmailWorker extends Thread {
         } catch (IOException e) {
             logger.error("Can not open email file: " + mail_path);
         }
-        catch (UnknownError e) {
+        catch (Exception e) {
             logger.error("Unknown error occurred during sending email: " + e.getMessage());
         }
         finally {
