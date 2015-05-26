@@ -65,7 +65,9 @@ You must add a Maven Goal for com.xmail.Main and for com.tests.Main as follow:
   
   5. Do the same thing for **Tests** (com.xmail.tests.Main)
 
-For a better understanding, please watch this video: [https://www.youtube.com/watch?v=OHXJXzZNKCU](https://www.youtube.com/watch?v=OHXJXzZNKCU) or read the documentation: [Javalite.io instrumentation for IntelliJ](http://javalite.io/instrumentation#video-intellij-idea-instrumentation)
+For a better understanding, please:
+  * watch this video: [ActiveJDBC + IntelliJ Idea + Instrumentation](https://www.youtube.com/watch?v=OHXJXzZNKCU) or 
+  * read the documentation: [Javalite.io instrumentation for IntelliJ](http://javalite.io/instrumentation#video-intellij-idea-instrumentation).
 
 # How to test
 1. In order to test **xmail-java**, you need to do few edits in [XmailConfig]():
