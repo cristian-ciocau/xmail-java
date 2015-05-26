@@ -53,6 +53,22 @@ This small project aims to demonstrate how to properly deliver emails according 
   A singleton static class used to implement a pool of outgoing (binding) IP addresses.
   This is helpful if you have many IP addresses bound to your server and you want to use them balanced (Round Robin).
   
+# IntelliJ - Create Project from this sources
+  1. Clone this project to your computer and add it as IntelliJ project
+  
+  2. Scroll in the left Project pane for **tests** folder.
+  Right click on it, select **Mark directory as** and choose **Sources root**
+  
+  3. Go to **Run** -> **Edit Configurations**
+  
+  4. Click on green "+" and choose **Application**
+  
+  5. Name it as **Main**, and add ```com.xmail.Main``` as **Main Class**
+  
+  6. Click again on green "+" sign and choose again **Application**
+  
+  7. Name it as **Test**, and add ```com.tests.Main``` as **Main Class**
+  
 # IntelliJ - Before to Run
 You must add a Maven Goal for com.xmail.Main and for com.tests.Main as follow:
   1. **Run** -> **Edit Configurations**
@@ -63,7 +79,7 @@ You must add a Maven Goal for com.xmail.Main and for com.tests.Main as follow:
   
   4. Add the next code to **Command line** field: ```org.javalite:activejdbc-instrumentation:1.4.10:instrument```
   
-  5. Do the same thing for **Tests** (com.xmail.tests.Main)
+  5. Do the same thing for **Test** (com.test.Main)
 
 For a better understanding, please:
   * watch this video: [ActiveJDBC + IntelliJ Idea + Instrumentation](https://www.youtube.com/watch?v=OHXJXzZNKCU) or 
