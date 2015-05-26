@@ -44,7 +44,8 @@ class ComposerTest {
             queue.close();
         }
         catch (IOException e) {
-            System.out.println(e.getMessage());
+            System.out.println("Can not write .eml file: " + e.getMessage() +
+                    ". Please check if you have write access to the mail folder.");
         }
     }
 }

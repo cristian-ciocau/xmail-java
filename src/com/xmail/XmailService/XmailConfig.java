@@ -12,9 +12,9 @@ public class XmailConfig {
 
     public static String bounceFrom = "postmaster@example.com";
 
-    public static String dbPath = "/tmp/xmail-java/data/data.db";
+    public static String dbPath = System.getProperty("user.dir") + "/data/data.db";
 
-    public static String mailPath = "/tmp/xmail-java/mail/";
+    public static String mailPath = System.getProperty("user.dir") + "/mail/";
 
     public static int port = 24;
 
