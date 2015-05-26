@@ -1,12 +1,16 @@
 package com.xmail.SMTP;
 
+import org.apache.commons.io.IOExceptionWithCause;
 import org.apache.log4j.Logger;
+import org.omg.CORBA.SystemException;
+
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.rmi.UnexpectedException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -62,94 +66,113 @@ public class Sender {
      */
     public boolean sendMail(String to, String data, String mx, String sourceIP) {
 
+        // Open Socket
+        if(!connect(mx, sourceIP)) return false;
+
+        // Talk to SMTP server
+        smtpDialogue(to, data);
+
+        // keep last error / message
+        int tempCode = getLastCode();
+        String tempMessage = getLastMessage();
+
+        // everything will finish with QUIT (if possible)
+        if(smtpWrite("QUIT" + CRLF)) smtpRead(221, "QUIT");
+
+        // Close Socket
+        close();
+
+        // and return
+        if(tempCode == 250) {
+            lastCode = 250;
+            lastMessage = "Mail sent OK";
+            return true;
+        }
+        else {
+            lastCode = tempCode;
+            lastMessage = tempMessage;
+            return false;
+        }
+    }
+
+    /**
+     * Sender.smtpDialogue()
+     *
+     * This contains all needed SMTP commands used to send a mail.
+     * It is used to keep the code clean and to offer the opportunity
+     * to send a QUIT command if other command failed (i.e. MAIL, RCPT).
+     *
+     * @param to
+     * @param data
+     * @return
+     */
+    private boolean smtpDialogue(String to, String data) {
         int retCode;
         String sizeCommand = "";
         boolean heloUsed = false;
 
-        // Open Socket
-        if(!connect(mx, sourceIP)) return false;
+        // Read the welcome message
+        if(smtpRead(220, "WELCOME") != 220) return false;
 
-        // an one-pass loop, used just to make code nicer
-        while(true) {
+        // Send Enhanced HELO
+        if(!smtpWrite("EHLO " + ehlo + CRLF)) return false;
+        retCode = smtpRead(250, "EHLO");
+        if (retCode == 500 || retCode == 501 || retCode == 502 || retCode == 550) {
+            // EHLO not implemented... try HELO
+            heloUsed = true;
 
-            // Read the welcome message
-            if (smtpRead(220, "WELCOME") != 220) break;
-
-            // Send Enhanced HELLO
-            if (!smtpWrite("EHLO " + ehlo + CRLF)) return false;
-            retCode = smtpRead(250, "EHLO");
-            if (retCode == 500 || retCode == 501 || retCode == 502 || retCode == 550) {
-                // EHLO not implemented... try HELO
-                heloUsed = true;
-
-                if (!smtpWrite("HELO " + ehlo + CRLF)) return false;
-                if (smtpRead(250, "HELO") != 250) break;
-            }
-            // Other EHLO error
-            else if (retCode != 250) break;
-
-            // Check here if STARTTLS is enabled and if we can use it
-            if (usingTls && isTls && !heloUsed) {
-
-                // Send the STARTTLS command
-                if (!smtpWrite("STARTTLS" + CRLF)) return false;
-                if (smtpRead(220, "STARTTLS") != 220) break;
-
-                // Wrap the socket to work on TLS
-                if (!startTls()) return false;
-
-                // Send the EHLO message again
-                if (!smtpWrite("EHLO " + ehlo + CRLF)) return false;
-                if (smtpRead(250, "EHLO") != 250) break;
-            }
-
-            // if the server advertised SIZE in EHLO
-            if (isSize && !heloUsed) {
-                // The mail is bigger than server advertised
-                if (mailSize > 0 && mailSize < data.length()) {
-                    lastCode = SIZE_ERROR;
-                    lastMessage = "Mail too large.";
-                    break;
-                }
-
-                // Add the SIZE to MAIL command
-                sizeCommand = " SIZE=" + Integer.toString(data.length());
-            }
-
-            // Send sender
-            if (!smtpWrite("MAIL FROM: <" + from + ">" + sizeCommand + CRLF)) return false;
-            if (smtpRead(250, "MAIL FROM") != 250) break;
-
-            // Send recipient
-            if (!smtpWrite("RCPT TO: <" + to + ">" + CRLF)) return false;
-            if (smtpRead(250, "RCPT TO") != 250) break;
-
-            // Send data start command
-            if(!smtpWrite("DATA" + CRLF)) return false;
-            if(smtpRead(354, "DATA") != 354) break;
-
-            // Send the e-mail data
-            if(!smtpWrite(data + CRLF)) break;
-
-            // Send a dot to show we're finished
-            if(!smtpWrite("." + CRLF)) return false; // this line sends a dot to mark the end of message
-            if(smtpRead(250, "DOT") != 250) break;
-
-            // Ok, we've sent all emails...
-            break;
+            if(!smtpWrite("HELO " + ehlo + CRLF)) return false;
+            if(smtpRead(250, "HELO") != 250) return false;
         }
-        // so everything breaks the loop finishes with QUIT
+        // Other EHLO error
+        else if (retCode != 250) return false;
 
-        if(lastCode != 250 || lastCode != 220) {
-            close();
-            return false;
+        // Check here if STARTTLS is enabled and if we can use it
+        if (usingTls && isTls && !heloUsed) {
+
+            // Send the STARTTLS command
+            if(!smtpWrite("STARTTLS" + CRLF)) return false;
+            if(smtpRead(220, "STARTTLS") != 220) return false;
+
+            // Wrap the socket to work on TLS
+            if (!startTls()) return false;
+
+            // Send the EHLO message again
+            if(!smtpWrite("EHLO " + ehlo + CRLF)) return false;
+            if (smtpRead(250, "EHLO") != 250) return false;
         }
 
-        // Send QUIT
-        if (!smtpWrite("QUIT" + CRLF)) return false;
-        smtpRead(221, "QUIT");
+        // if the server advertised SIZE in EHLO
+        if (isSize && !heloUsed) {
+            // The mail is bigger than server advertised
+            if (mailSize > 0 && mailSize < data.length()) {
+                lastCode = SIZE_ERROR;
+                lastMessage = "Mail too large.";
+                return false;
+            }
 
-        close();
+            // Add the SIZE to MAIL command
+            sizeCommand = " SIZE=" + Integer.toString(data.length());
+        }
+
+        // Send sender
+        if(!smtpWrite("MAIL FROM: <" + from + ">" + sizeCommand + CRLF)) return false;
+        if (smtpRead(250, "MAIL FROM") != 250) return false;
+
+        // Send recipient
+        if(!smtpWrite("RCPT TO: <" + to + ">" + CRLF)) return false;
+        if (smtpRead(250, "RCPT TO") != 250) return false;
+
+        // Send data start command
+        if(!smtpWrite("DATA" + CRLF)) return false;
+        if (smtpRead(354, "DATA") != 354) return false;
+
+        // Send the e-mail data
+        if(!smtpWrite(data + CRLF, false)) return false;
+
+        // Send a dot to show we're finished
+        if(!smtpWrite("." + CRLF)) return false;
+        if (smtpRead(250, "DOT") != 250) return false;
 
         return true;
     }
@@ -211,21 +234,21 @@ public class Sender {
      *
      * Reads from socket and parses the response
      *
-     * @param expected the SMTP code we except to receive
      * @param key used for logging
      * @return the SMTP code read
      */
     private int smtpRead(int expected, String key) {
         int tries = 0;
-        String response;
+        String responseLine, response = "";
 
         Pattern sizeRegex = Pattern.compile("(?i)250-SIZE[ ]+([0-9]+)");
 
         try {
-            while((response = inSocket.readLine()) != null) {
+            while((responseLine = inSocket.readLine()) != null) {
+                response += responseLine;
 
                 // Log each line of response
-                logger.debug(key + ": " + response);
+                logger.debug("Read " + key + ": " + responseLine);
 
                 // To avoid a deadlock break the loop after 20 as this should not happen ever
                 tries++;
@@ -233,21 +256,21 @@ public class Sender {
                     logger.error("Too many lines received from server.");
                     lastCode = 554;
                     lastMessage = "Mail loop detected";
-                    return READ_ERROR;
+                    throw new IOException();
                 }
 
                 // Check for STARTTLS command
-                if(response.contains("250-STARTTLS")) isTls = true;
+                if(responseLine.contains("250-STARTTLS")) isTls = true;
 
                 // Check for SIZE command
-                Matcher mSize = sizeRegex.matcher(response);
+                Matcher mSize = sizeRegex.matcher(responseLine);
                 if(mSize.find()) {
                     isSize = true;
                     mailSize = Long.parseLong(mSize.group(1));
                 }
 
                 // Get the last line?
-                if(response.indexOf(" ") == 3) {
+                if(responseLine.indexOf(" ") == 3) {
                     break;
                 }
             }
@@ -264,23 +287,14 @@ public class Sender {
             return READ_ERROR;
         }
 
-        if (response == null) {
-            logger.error("ERROR RESPONSE: Could not get mail server response codes.");
-            lastCode = READ_ERROR;
-            lastMessage = "Could not get mail server response codes.";
-            return READ_ERROR;
+        // If we didn't get the expected code
+        if(Integer.parseInt(response.substring(0, 3)) != expected) {
+            logger.error(String.format("Ran into problems sending Mail. Received: %3d... but expected: %3d",
+                    Integer.parseInt(response.substring(0, 3)),
+                    expected) );
         }
 
-        // Log  error if expected code not received
-        if (Integer.parseInt(response.substring(0, 3)) != expected) {
-            logger.error("Ran into problems sending Mail. Received: " + response.substring(0, 3) +
-                    ".. but expected: " + Integer.toString(expected));
-            lastCode = Integer.parseInt(response.substring(0, 3));
-            lastMessage = response.substring(3);
-            return lastCode;
-        }
-
-        // Access denied... Quit
+        // If Access denied... Quit
         if (Integer.parseInt(response.substring(0, 3)) == 451) {
             logger.error("ERROR QUIT: Server declined access. Quitting.");
             lastCode = ACCESS_DENIED;
@@ -289,7 +303,7 @@ public class Sender {
         }
 
         lastCode = Integer.parseInt(response.substring(0, 3));
-        lastMessage = response.substring(3);
+        lastMessage = response;
         return lastCode;
     }
 
@@ -299,12 +313,15 @@ public class Sender {
      * Writes a buffer to socket
      *
      * @param buffer the data that should be sent
-     * @return true | false
      */
-    public boolean smtpWrite(String buffer) {
+    public boolean smtpWrite(String buffer, boolean log) {
         try {
             outSocket.write(buffer);
             outSocket.flush();
+
+            if(log) {
+                logger.info("Write: " + buffer.substring(0, buffer.length() - 2));
+            }
         } catch (IOException e) {
             logger.error("SOCKET WRITE: IOException:  " + e);
             lastCode = WRITE_ERROR;
@@ -313,6 +330,18 @@ public class Sender {
         }
 
         return true;
+    }
+
+    /**
+     * Sender.smtpWrite()
+     *
+     * Overloaded method
+     *
+     * @param buffer
+     * @return
+     */
+    public boolean smtpWrite(String buffer) {
+        return smtpWrite(buffer, true);
     }
 
     /**

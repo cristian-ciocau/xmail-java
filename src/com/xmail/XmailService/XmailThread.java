@@ -4,18 +4,41 @@ import com.xmail.SMTP.AdvancedSender;
 import com.xmail.XmailService.Models.QueuedMails;
 import com.xmail.IO.FileUtils;
 import com.xmail.SMTP.SMTP;
-import com.xmail.Threads.NotifyingThread;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Created by cristian on 4/29/15.
  */
-public class XmailThread extends NotifyingThread {
+public class XmailThread extends Thread {
     final static Logger logger = Logger.getRootLogger();
 
     int mailId;
+    List<XmailThread> smtpThreadsList;
+
+    /**
+     * XmailThread.run()
+     *
+     * Overrides the default thread method
+     * in order to keep a track of current running threads.
+     */
+    @Override
+    public void run() {
+        synchronized (smtpThreadsList) {
+            smtpThreadsList.add(this);
+        }
+
+        try {
+            doRun();
+        }
+        finally {
+            synchronized (smtpThreadsList) {
+                smtpThreadsList.remove(this);
+            }
+        }
+    }
 
     /**
      * XmailThread.doRun()
@@ -133,5 +156,9 @@ public class XmailThread extends NotifyingThread {
      */
     public void addMailId(int id) {
         mailId = id;
+    }
+
+    public void addThreadList(List<XmailThread> threadList) {
+        smtpThreadsList = threadList;
     }
 }

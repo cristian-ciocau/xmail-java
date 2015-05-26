@@ -1,7 +1,6 @@
 package com.xmail.XmailService;
 
 import com.xmail.XmailService.Models.QueuedMails;
-import com.xmail.Threads.ThreadCompleteListener;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -10,10 +9,8 @@ import java.util.List;
 /**
  * Created by cristian on 4/29/15.
  */
-public class XmailService implements ThreadCompleteListener {
+public class XmailService {
     final static Logger logger = Logger.getRootLogger();
-
-    int runningSmtpThreads = 0;
 
     List<XmailThread> smtpThreadsList = new ArrayList<XmailThread>();
 
@@ -26,25 +23,8 @@ public class XmailService implements ThreadCompleteListener {
      */
     public void start() {
 
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            public void run() {
-                shutdown = true;
-
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Catch exit signal.");
-                }
-
-                for (XmailThread thread : smtpThreadsList) {
-                    try {
-                        if (thread.isAlive()) {
-                            thread.join();
-                        }
-                    } catch (InterruptedException e) {
-                        System.out.println(e);
-                    }
-                }
-            }
-        }));
+        // Initialize the Shutdown Hook
+        initShutdownHook();
 
         // Initialize the Mail Queue
         MailQueue queue = MailQueue.getInstance();
@@ -71,18 +51,15 @@ public class XmailService implements ThreadCompleteListener {
             List<QueuedMails> mails = queue.getEmails(XmailConfig.maxSmtpThreads);
             for (QueuedMails mail : mails) {
 
-                if (runningSmtpThreads < XmailConfig.maxSmtpThreads) {
+                if (smtpThreadsList.size() < XmailConfig.maxSmtpThreads) {
 
                     mail.set("status", 1).saveIt();
 
                     XmailThread newThread = new XmailThread();
-                    newThread.addListener(this);
                     newThread.addMailId((Integer) mail.get("id"));
                     newThread.setDaemon(true);
-                    smtpThreadsList.add(newThread);
+                    newThread.addThreadList(smtpThreadsList);
                     newThread.start();
-
-                    runningSmtpThreads++;
 
                 }
                 else {
@@ -101,14 +78,29 @@ public class XmailService implements ThreadCompleteListener {
     }
 
     /**
-     * XmailService.notifyOfThreadComplete()
+     * XmailService.initShutdownHook()
      *
-     * Receives notifications from the finished threads
-     *
-     * @param finishedThread
+     * Sets a shutdown hook handler which will attempt to grateful exit
      */
-    public void notifyOfThreadComplete(Thread finishedThread) {
-        runningSmtpThreads--;
-        logger.info("End.");
+    private void initShutdownHook() {
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            public void run() {
+                shutdown = true;
+
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Catch exit signal.");
+                }
+
+                for (XmailThread thread : smtpThreadsList) {
+                    try {
+                        if (thread.isAlive()) {
+                            thread.join();
+                        }
+                    } catch (InterruptedException e) {
+                        logger.error(e.getMessage());
+                    }
+                }
+            }
+        }));
     }
 }

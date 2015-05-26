@@ -3,6 +3,7 @@ package com.xmail.SMTP;
 import com.xmail.Dns.Dns;
 import com.xmail.XmailService.IpQueue;
 import com.xmail.XmailService.XmailConfig;
+import org.apache.log4j.Logger;
 
 import javax.naming.NamingException;
 
@@ -10,6 +11,8 @@ import javax.naming.NamingException;
  * Created by cristian on 5/12/15.
  */
 public class AdvancedSender extends Sender {
+    final static Logger logger = Logger.getRootLogger();
+
     int ipIndex = 0;
     boolean ipv6Used = true;
     int mxIndex = 0;
@@ -45,24 +48,28 @@ public class AdvancedSender extends Sender {
                 if(mxIndex >= mxs.length) mxIndex = 0;
 
                 for(; mxIndex < mxs.length; mxIndex++) {
+                    logger.debug("Remote MTA: " + mxs[mxIndex][1]);
 
                     if(XmailConfig.ipv6Enabled && ipv6Used) {
                         if(bindingIPv6 == null) bindingIPv6 = ipQueue.getIpv6();
+                        logger.info("Bound to IPv6: " + bindingIPv6);
 
                         String[] ips6 = Dns.getAAAA(mxs[mxIndex][1]);
                         int ret = send2IP(to, data, ips6, bindingIPv6);
 
-                        if(ret == SMTP.SERVER_NOT_FOUND || ret == SMTP.MAILBOX_NOT_EXISTS) continue;
+                        if(ret == SMTP.SERVER_NOT_FOUND || ret == SMTP.MAILBOX_NOT_EXISTS || ret == SMTP.TEMPORARY_ERROR) continue;
                         return ret;
                     }
 
                     // Try to IPv4
                     ipv6Used = false;
                     if(bindingIPv4 == null) bindingIPv4 = ipQueue.getIpv4();
+                    logger.info("Bound to IPv4: " + bindingIPv4);
+
                     String[] ips4 = Dns.getA(mxs[mxIndex][1]);
                     int ret = send2IP(to, data, ips4, bindingIPv4);
 
-                    if(ret == SMTP.SERVER_NOT_FOUND || ret == SMTP.MAILBOX_NOT_EXISTS) continue;
+                    if(ret == SMTP.SERVER_NOT_FOUND || ret == SMTP.MAILBOX_NOT_EXISTS || ret == SMTP.TEMPORARY_ERROR) continue;
                     return ret;
 
                 }

@@ -143,7 +143,7 @@ public class MailQueue {
             if(retry < XmailConfig.maxRetryCount - 1) {
                 retry++;
 
-                long timeAdj = XmailConfig.retryTime.get(retry) * 60 * 1000;
+                long timeAdj = XmailConfig.retryTime.get(retry) * 1000;
 
                 /* This is a crazy approach to get the time in UTC ? */
                 TimeZone timeZone = TimeZone.getTimeZone("UTC");
