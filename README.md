@@ -55,11 +55,15 @@ This small project aims to demonstrate how to properly deliver emails according 
   
 # IntelliJ - Before to Run
 You must add a Maven Goal for com.xmail.Main and for com.tests.Main as follow:
-1. **Run** -> **Edit Configurations**
-2. Select **Main** from **Applications** on the left
-3. In **Before Launch** area click on "+" and select **Run Maven Goal**
-4. Add the next code to **Command line** field: ```org.javalite:activejdbc-instrumentation:1.4.10:instrument```
-5. Do the same thing for **Tests** (com.xmail.tests.Main)
+  1. **Run** -> **Edit Configurations**
+  
+  2. Select **Main** from **Applications** on the left
+  
+  3. In **Before Launch** area click on "+" and select **Run Maven Goal**
+  
+  4. Add the next code to **Command line** field: ```org.javalite:activejdbc-instrumentation:1.4.10:instrument```
+  
+  5. Do the same thing for **Tests** (com.xmail.tests.Main)
 
 For a better understanding, please watch this video: [https://www.youtube.com/watch?v=OHXJXzZNKCU](https://www.youtube.com/watch?v=OHXJXzZNKCU) or read the documentation: [Javalite.io instrumentation for IntelliJ](http://javalite.io/instrumentation#video-intellij-idea-instrumentation)
 
