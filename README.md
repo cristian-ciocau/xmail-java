@@ -82,4 +82,3 @@ This small project aims to demonstrate how to properly deliver emails according 
 
 # Other requirements
 This library requires [Apache log4j](http://logging.apache.org/log4j/1.2/) and [ActiveJDBC](http://javalite.io/activejdbc).
-

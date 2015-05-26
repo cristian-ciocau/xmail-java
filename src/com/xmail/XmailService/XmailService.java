@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 /**
  * Created by cristian on 4/29/15.
@@ -12,7 +13,7 @@ import java.util.List;
 public class XmailService {
     final static Logger logger = Logger.getRootLogger();
 
-    List<XmailThread> smtpThreadsList = new ArrayList<XmailThread>();
+    final ConcurrentLinkedDeque<Thread> smtpThreadsList = new ConcurrentLinkedDeque<Thread>();
 
     boolean shutdown = false;
 
@@ -49,16 +50,31 @@ public class XmailService {
             }
 
             List<QueuedMails> mails = queue.getEmails(XmailConfig.maxSmtpThreads);
-            for (QueuedMails mail : mails) {
+            for (final QueuedMails mail : mails) {
 
                 if (smtpThreadsList.size() < XmailConfig.maxSmtpThreads) {
 
                     mail.set("status", 1).saveIt();
 
-                    XmailThread newThread = new XmailThread();
-                    newThread.addMailId((Integer) mail.get("id"));
+                    Thread newThread = new Thread() {
+                        @Override
+                        public void run() {
+                            synchronized (smtpThreadsList) {
+                                smtpThreadsList.add(this);
+                            }
+
+                            try {
+                                XmailWorker worker = new XmailWorker();
+                                worker.process((Integer) mail.get("id"));
+                            }
+                            finally {
+                                synchronized (smtpThreadsList) {
+                                    smtpThreadsList.remove(this);
+                                }
+                            }
+                        }
+                    };
                     newThread.setDaemon(true);
-                    newThread.addThreadList(smtpThreadsList);
                     newThread.start();
 
                 }
@@ -91,7 +107,8 @@ public class XmailService {
                     logger.debug("Catch exit signal.");
                 }
 
-                for (XmailThread thread : smtpThreadsList) {
+                for (Thread thread : smtpThreadsList) {
+
                     try {
                         if (thread.isAlive()) {
                             thread.join();
@@ -99,6 +116,7 @@ public class XmailService {
                     } catch (InterruptedException e) {
                         logger.error(e.getMessage());
                     }
+
                 }
             }
         }));

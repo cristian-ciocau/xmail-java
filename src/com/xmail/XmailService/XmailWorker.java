@@ -12,41 +12,16 @@ import java.util.List;
 /**
  * Created by cristian on 4/29/15.
  */
-public class XmailThread extends Thread {
+public class XmailWorker extends Thread {
     final static Logger logger = Logger.getRootLogger();
 
-    int mailId;
-    List<XmailThread> smtpThreadsList;
-
     /**
-     * XmailThread.run()
-     *
-     * Overrides the default thread method
-     * in order to keep a track of current running threads.
-     */
-    @Override
-    public void run() {
-        synchronized (smtpThreadsList) {
-            smtpThreadsList.add(this);
-        }
-
-        try {
-            doRun();
-        }
-        finally {
-            synchronized (smtpThreadsList) {
-                smtpThreadsList.remove(this);
-            }
-        }
-    }
-
-    /**
-     * XmailThread.doRun()
+     * XmailWorker.process()
      *
      * Sends a new or queued email
      *
      */
-    public void doRun() {
+    public void process(int mailId) {
         final String to, data;
         String mail_path = "";
         int status;
@@ -144,21 +119,5 @@ public class XmailThread extends Thread {
             queue.close();
         }
 
-    }
-
-    /**
-     * XmailThread.addMailId()
-     *
-     * This method is used the parent thread in order to pass information
-     * about the email which needs to be processed
-     *
-     * @param id
-     */
-    public void addMailId(int id) {
-        mailId = id;
-    }
-
-    public void addThreadList(List<XmailThread> threadList) {
-        smtpThreadsList = threadList;
     }
 }
