@@ -34,7 +34,7 @@ class AddTestMail {
             mailer.mail(to, from, subject, message, headers, attachments);
         }
         catch(Exception e) {
-            System.out.println(e.getMessage());
+            System.out.println("Error: " + e.getMessage());
             System.exit(-1);
         }
 

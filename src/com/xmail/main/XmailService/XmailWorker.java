@@ -117,7 +117,7 @@ public class XmailWorker extends Thread {
             logger.error("Can not open email file: " + mail_path);
         }
         catch (Exception e) {
-            logger.error("Unknown error occurred during sending email: " + e.getMessage());
+            logger.error("Unknown error occurred during sending email: " + e.getClass() + ": " + e.getMessage());
         }
         finally {
 
