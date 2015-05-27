@@ -86,7 +86,12 @@ this and the main process will stop after all current running jobs are gracefull
     2. Select **Xmail Java** -> **Plugins** -> **activejdbc-instrumentation** -> **activejdbc-instrumentation:instrument**
     3. Click on **Run Maven Build** (the green play button) in order to instrument [QueuedMails](https://github.com/tntu/xmail-java/blob/master/src/com/xmail/main/XmailService/Models/QueuedMails.java) model.
     
-    This is needed each time you will edit QueuedMails model.
+    This is needed each time you will edit [QueuedMails](https://github.com/tntu/xmail-java/blob/master/src/com/xmail/main/Models/QueuedMails.java) model.
+    
+    If you will receive the next error: 
+    ```[FATAL_ERROR] Cannot start Maven: Specified Maven home directory (Bundled (Maven 3)) does not exist. <a href="#">Configure Maven home</a>```
+    you have to check your IntelliJ configuration for Maven. **File** -> **Settings** -> **Build, Execution, Deployment** ->
+    **Build Tools** -> **Maven** -> Maven Home Directory.
     
     For a better understanding of Maven Goal for ActiveJDBC, please:
     * watch this video: [ActiveJDBC + IntelliJ Idea + Instrumentation](https://www.youtube.com/watch?v=OHXJXzZNKCU) or     
@@ -125,6 +130,10 @@ this and the main process will stop after all current running jobs are gracefull
 3. Run The com.xmail/examples/AddTestMail.java for few times.
 4. Now you can start the service com.xmail/main/Main.java. 
 5. You can also run the program from step (3) during the service process is running.
+
+During the running process, if you will receive one of the next errors, you have to run the Maven Goal described upper:
+```err1```
+```err2```
 
 # Dependencies
 The needed external libraries are already saved in the pom.xml file, so you don't have to bother of them. 

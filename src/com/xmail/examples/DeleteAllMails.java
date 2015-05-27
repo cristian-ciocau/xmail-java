@@ -24,5 +24,7 @@ public class DeleteAllMails {
                 FileUtils.deleteFile(listOfFiles[i]);
             }
         }
+
+        System.out.println("All email queue has been erased.");
     }
 }
