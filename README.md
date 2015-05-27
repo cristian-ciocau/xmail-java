@@ -102,7 +102,7 @@ this and the main process will stop after all current running jobs are gracefull
 1. In order to test **Xmail Java**, you need to do few edits in [Config](https://github.com/tntu/xmail-java/blob/master/src/com/xmail/Config.java):
     1. Change the **EHLO** and email addresses according to your needs.
     ```
-        public static String ehlo = "ceakki.eu";
+        public static String ehlo = "example.com";
     
         public static String bounceFrom = "postmaster@example.com";
     ```
