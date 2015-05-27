@@ -41,7 +41,7 @@ this and the main process will stop after all current running jobs are gracefull
 
 # Highlights
 
-1. [Composer Class](https://github.com/tntu/xmail-java/blob/master/src/com/xmail/SMTP/Composer.java)
+1. [Composer Class](https://github.com/tntu/xmail-java/blob/master/src/com/xmail/main/SMTP/Composer.java)
     The email composer. It takes the recipient address, subject, message, any attachments and also accepts some headers.
     
     It supports MIME format and it assumes that the message contains HTML markups. It will create also the text/plain 
@@ -50,7 +50,7 @@ this and the main process will stop after all current running jobs are gracefull
     It also contains a method for creating the bounce messages which will be used to notify the sender 
     in case the email delivery failed.
 
-2. [Sender Class](https://github.com/tntu/xmail-java/blob/master/src/com/xmail/SMTP/Sender.java)
+2. [Sender Class](https://github.com/tntu/xmail-java/blob/master/src/com/xmail/main/SMTP/Sender.java)
     The queue service.
     
     It connects to the remote MTA and tries to deliver.
@@ -64,7 +64,7 @@ this and the main process will stop after all current running jobs are gracefull
     
     This is a basic implementation to demonstrate how things should work.
 
-3. [AdvancedSender Class](https://github.com/tntu/xmail-java/blob/master/src/com/xmail/SMTP/AdvancedSender.java)
+3. [AdvancedSender Class](https://github.com/tntu/xmail-java/blob/master/src/com/xmail/main/SMTP/AdvancedSender.java)
     This is  an extension of the Sender Class and comes with Round Robin MX cycling, ordered by their priority.
     
     We learned in time that sending the mail only on the first MX is not a good practice.
@@ -74,17 +74,17 @@ this and the main process will stop after all current running jobs are gracefull
     We also experienced bad recipient MX records and thus never take a rejection as final until you attempt once 
     more to another MX.
 
-4. [IpQueue Class](https://github.com/tntu/xmail-java/blob/master/src/com/xmail/XmailService/IpQueue.java)
+4. [IpQueue Class](https://github.com/tntu/xmail-java/blob/master/src/com/xmail/main/XmailService/IpQueue.java)
     A singleton static class used to implement a pool of outgoing (binding) IP addresses.
     
     This is helpful if you have many IP addresses bound to your server and you want to use them balanced (Round Robin).
   
 # IntelliJ - Before Run
-1. Make sure you edited [Config.java]()
+1. Make sure you edited [Config.java](https://github.com/tntu/xmail-java/blob/master/src/com/xmail/Config.java)
 2. Run a Maven goal as follow: 
     1. **View** -> **Tool Windows** -> **Maven Projects**
     2. Select **Xmail Java** -> **Plugins** -> **activejdbc-instrumentation** -> **activejdbc-instrumentation:instrument**
-    3. Click on **Run Maven Build** (the green play button) in order to instrument [QueuedMails] model.
+    3. Click on **Run Maven Build** (the green play button) in order to instrument [QueuedMails](https://github.com/tntu/xmail-java/blob/master/src/com/xmail/main/XmailService/Models/QueuedMails.java) model.
     
     This is needed each time you will edit QueuedMails model.
     
@@ -94,7 +94,7 @@ this and the main process will stop after all current running jobs are gracefull
     * read the documentation: [Javalite.io instrumentation for IntelliJ](http://javalite.io/instrumentation#video-intellij-idea-instrumentation).
 
 # How to test
-1. In order to test **Xmail Java**, you need to do few edits in [Config]():
+1. In order to test **Xmail Java**, you need to do few edits in [Config](https://github.com/tntu/xmail-java/blob/master/src/com/xmail/Config.java):
     1. Change the **EHLO** and email addresses according to your needs.
     ```
         public static String ehlo = "ceakki.eu";
