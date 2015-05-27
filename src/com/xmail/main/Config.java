@@ -1,4 +1,4 @@
-package com.xmail;
+package com.xmail.main;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,12 +11,6 @@ public class Config {
     public static String ehlo = "example.com";
 
     public static String bounceFrom = "postmaster@example.com";
-
-    public static String testMailTo = "to@example.com";
-
-    public static String testMailFrom = "from@example.com";
-
-    public static String testMailFromHeader = "from@example.com";
 
     public static int port = 25;
 

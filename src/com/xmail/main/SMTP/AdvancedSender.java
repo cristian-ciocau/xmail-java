@@ -2,7 +2,7 @@ package com.xmail.main.SMTP;
 
 import com.xmail.main.Dns.Dns;
 import com.xmail.main.XmailService.IpQueue;
-import com.xmail.Config;
+import com.xmail.main.Config;
 import org.apache.log4j.Logger;
 
 import javax.naming.NamingException;

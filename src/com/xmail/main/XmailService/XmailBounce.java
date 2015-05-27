@@ -1,6 +1,6 @@
 package com.xmail.main.XmailService;
 
-import com.xmail.Config;
+import com.xmail.main.Config;
 import com.xmail.main.IO.FileUtils;
 import com.xmail.main.Mime.Mime;
 import com.xmail.main.SMTP.Composer;

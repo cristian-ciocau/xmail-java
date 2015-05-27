@@ -1,13 +1,6 @@
 package com.xmail.examples;
 
-import com.xmail.main.IO.FileUtils;
-import com.xmail.main.SMTP.Composer;
-import com.xmail.main.XmailService.MailQueue;
-import com.xmail.Config;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Map;
+import com.xmail.main.MailClient.MailClient;
 
 
 /**
@@ -17,10 +10,9 @@ class AddTestMail {
 
     public static void main(String[] args) {
 
-        String from = Config.testMailFrom;
-
-        String to = Config.testMailTo;
-        String headers = "From: <" + Config.testMailFromHeader + ">";
+        String to = "to@example.com";
+        String from = "from@example.com";
+        String headers = "From: <" + from + ">";
 
         String subject = "Lorem ipsum";
         String message = "<h1>Lorem ipsum for com.xmail</h1>\n\n" +
@@ -36,35 +28,14 @@ class AddTestMail {
 
         String[] attachments = new String[] {System.getProperty("user.dir") + "/src/com/xmail/test/resources/lorem_ipsum.gif"};
 
+        // And send the email
         try {
-            Composer composer = new Composer();
-            Map<String, String> mail = composer.compose(to, subject, message, headers, attachments);
-
-            File file = File.createTempFile("xmail", ".eml", new File(Config.mailPath));
-            String mailPath = file.getAbsolutePath();
-
-            FileUtils.putFileContents(file, mail.get("headers") + "\r\n" + mail.get("content"));
-
-            MailQueue queue = MailQueue.getInstance();
-            if(!queue.init(Config.dbPath)) {
-                System.out.println("Could not create the database.");
-                System.exit(-1);
-            }
-            if(!queue.open()) {
-                System.out.println("Could not connect to database.");
-                System.exit(-1);
-            }
-            queue.addEmail(to, from, mailPath);
-            queue.close();
+            MailClient mailer = new MailClient();
+            mailer.mail(to, from, subject, message, headers, attachments);
         }
-        catch (IOException e) {
-            System.out.println("Can not write .eml file: " + e.getMessage() +
-                    ". Please check if you have write access to the mail folder.");
-            System.exit(-2);
-        }
-        catch (Exception e) {
-            System.out.println(e.getClass() + ": " + e.getMessage());
-            System.exit(-3);
+        catch(Exception e) {
+            System.out.println(e.getMessage());
+            System.exit(-1);
         }
 
         System.out.println("An email for <" + to + "> was prepared for delivery.");

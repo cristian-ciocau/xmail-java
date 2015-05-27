@@ -105,12 +105,6 @@ this and the main process will stop after all current running jobs are gracefull
         public static String ehlo = "ceakki.eu";
     
         public static String bounceFrom = "postmaster@example.com";
-
-        public static String testMailTo = "to@example.com";
-
-        public static String testMailFrom = "from@example.com";
-
-        public static String testMailFromHeader = "from@example.com";
     ```
     
     2. Change the remote SMTP port ```public static int port = 25;```. Some ISPs blocks the default 25 port. 
@@ -126,7 +120,12 @@ this and the main process will stop after all current running jobs are gracefull
     };
     public static boolean ipv6Enabled = false;
     ```
-    
+
+2. Edit next lines in [AddTestMail](https://github.com/tntu/xmail-java/blob/master/src/com/xmail/examples/AddTestMail.java)
+    ```
+        String to = "to@example.com";
+        String from = "from@example.com";
+    ```
 3. Run The com.xmail/examples/AddTestMail.java for few times.
 4. Now you can start the service com.xmail/main/Main.java. 
 5. You can also run the program from step (3) during the service process is running.

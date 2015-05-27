@@ -1,6 +1,6 @@
 package com.xmail.examples;
 
-import com.xmail.Config;
+import com.xmail.main.Config;
 import com.xmail.main.IO.FileUtils;
 
 import java.io.File;
