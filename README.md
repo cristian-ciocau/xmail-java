@@ -107,7 +107,7 @@ this and the main process will stop after all current running jobs are gracefull
         public static String bounceFrom = "postmaster@example.com";
     ```
     
-    2. Change the remote SMTP port ```public static int port = 25;```. Some ISPs blocks the default 25 port. 
+    2. Change the remote SMTP port ```public static int port = 25;```. Some ISPs block the default 25 port. 
     Some MTA provide an alternative port for SMTP, like port 26.
     
     3. Add the bound IP addresses to your machine (if you support this):
