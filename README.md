@@ -132,10 +132,11 @@ this and the main process will stop after all current running jobs are gracefull
 5. You can also run the program from step (3) during the service process is running.
 
 **Note:**
-During the running process, if you will receive the next error, you have to run the Maven Goal described upper:
+During the running process, if you will receive the next error:
 ```class org.javalite.activejdbc.InitException: you are trying to work with models, but no models are found. 
 Maybe you have no models in project, or you did not instrument the models. 
 It is expected that you have a file activejdbc_models.properties on classpath```
+you have to run the Maven Goal described upper
 
 # Dependencies
 The needed external libraries are already saved in the pom.xml file, so you don't have to bother of them. 
