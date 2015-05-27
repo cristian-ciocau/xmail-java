@@ -10,7 +10,7 @@ to accommodate non standard MTA configurations.
 2. A queue service that is contained within this library will pick any emails in the queue and try to deliver them.
     1. The queue will attempt to deliver only when it has enough free slots to open a new thread
     2. If it is the first attempt to deliver an email it will choose the next available IP and a next available MX for
-     delivery in order to balance the load between outbound IP's and recipient MX servers at high load.
+    delivery in order to balance the load between outbound IP's and recipient MX servers at high load.
         1. If the email was queued before, it will check what wore the errors or previous deliveries and try to adapt 
         to avoid them if possible.
         2. In case of failure it will not just try to adapt itself but also pick another MX server for the recipient 
@@ -88,10 +88,8 @@ this and the main process will stop after all current running jobs are gracefull
     
     This is needed each time you will edit QueuedMails model.
     
-    For a better understanding, please:
-        
+    For a better understanding of Maven Goal for ActiveJDBC, please:
         * watch this video: [ActiveJDBC + IntelliJ Idea + Instrumentation](https://www.youtube.com/watch?v=OHXJXzZNKCU) or 
-        
         * read the documentation: [Javalite.io instrumentation for IntelliJ](http://javalite.io/instrumentation#video-intellij-idea-instrumentation).
 
 # How to test
@@ -130,11 +128,7 @@ this and the main process will stop after all current running jobs are gracefull
 # Dependencies
 The needed external libraries are already saved in the pom.xml file, so you don't have to bother of them. 
 Anyway, here is the list of them, if you are curious:
-    
     * [ActiveJDBC](http://javalite.io/activejdbc)
-    
     * [SQLite JDBC Driver by Xerial](https://bitbucket.org/xerial/sqlite-jdbc)
-    
     * [Apache log4j](http://logging.apache.org/log4j/1.2/)
-    
     * [Apache Commons IO](https://commons.apache.org/proper/commons-io/)
