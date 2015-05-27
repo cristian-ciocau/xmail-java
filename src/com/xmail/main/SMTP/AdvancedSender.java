@@ -11,7 +11,7 @@ import javax.naming.NamingException;
  * Created by cristian on 5/12/15.
  */
 public class AdvancedSender extends Sender {
-    final static Logger logger = Logger.getRootLogger();
+    final static Logger logger = Logger.getLogger(AdvancedSender.class);
 
     int ipIndex = 0;
     boolean ipv6Used = true;

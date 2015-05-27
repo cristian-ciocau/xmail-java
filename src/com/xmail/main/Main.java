@@ -7,7 +7,7 @@ public class Main {
 
     public static void main(String[] args) {
 
-        PropertyConfigurator.configure("classes/log4j.properties");
+        PropertyConfigurator.configure("log4j.properties");
 
         XmailService xmail = new XmailService();
         xmail.start();

@@ -1,9 +1,13 @@
 package com.xmail.main.XmailService;
 
+import org.apache.log4j.Logger;
+
 /**
  * Created by cristian on 5/12/15.
  */
 public class IpQueue {
+    final static Logger logger = Logger.getLogger(IpQueue.class);
+
     static int currentIpv4 = 0;
     static int currentIpv6 = 0;
 
@@ -64,6 +68,8 @@ public class IpQueue {
         currentIpv4++;
         if(currentIpv4 >= ipv4.length) currentIpv4 = 0;
 
+        logger.debug("Reserve IPv4: " + ip);
+
         return ip;
     }
 
@@ -79,6 +85,8 @@ public class IpQueue {
 
         currentIpv6++;
         if(currentIpv6 >= ipv6.length) currentIpv6 = 0;
+
+        logger.debug("Reserve IPv6: " + ip);
 
         return ip;
     }

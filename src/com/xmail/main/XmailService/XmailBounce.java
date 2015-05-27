@@ -14,7 +14,7 @@ import java.util.Map;
  * Created by cristian on 5/15/15.
  */
 public class XmailBounce {
-    final static Logger logger = Logger.getRootLogger();
+    final static Logger logger = Logger.getLogger(XmailBounce.class);
 
     /**
      * XmailBounce.sendBounce()
@@ -58,9 +58,11 @@ public class XmailBounce {
             // Add email to queue
             MailQueue queue = MailQueue.getInstance();
             queue.addEmail(to, from, mailPath);
+
+            logger.info("Bounce for <" + to + "> successfully queued.");
         }
         catch (IOException e) {
-            logger.error("Bounce preparing error: " + e.getMessage());
+            logger.error("Bounce for <" + to + "> can not be queued due error: " + e.getMessage());
             return false;
         }
 

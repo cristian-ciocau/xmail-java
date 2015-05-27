@@ -15,7 +15,7 @@ import java.util.*;
  * Created by cristian on 4/30/15.
  */
 public class MailQueue {
-    final static Logger logger = Logger.getRootLogger();
+    final static Logger logger = Logger.getLogger(MailQueue.class);
 
     private static MailQueue instance = null;
     private static String dbPath;

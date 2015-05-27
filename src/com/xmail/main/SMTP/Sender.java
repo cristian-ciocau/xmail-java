@@ -18,6 +18,8 @@ import java.util.regex.Pattern;
  * Created by Christian on 4/26/2015.
  */
 public class Sender {
+    final static Logger logger = Logger.getLogger(Sender.class);
+
     private final int SERVER_NOT_FOUND = 101;
     private final int ACCESS_DENIED = 102;
     private final int READ_ERROR = 103;
@@ -49,9 +51,6 @@ public class Sender {
     private BufferedReader inSocket = null;
     private BufferedWriter outSocket = null;
     private String CRLF = "\r\n";
-
-    // logger
-    final static Logger logger = Logger.getRootLogger();
 
     /**
      * Sender.sendMail()

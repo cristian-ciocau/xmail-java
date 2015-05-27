@@ -46,10 +46,13 @@ class AddTestMail {
             FileUtils.putFileContents(file, mail.get("headers") + "\r\n" + mail.get("content"));
 
             MailQueue queue = MailQueue.getInstance();
-            queue.init(Config.dbPath);
+            if(!queue.init(Config.dbPath)) {
+                System.out.println("Could not create the database.");
+                System.exit(-1);
+            }
             if(!queue.open()) {
                 System.out.println("Could not connect to database.");
-                return;
+                System.exit(-1);
             }
             queue.addEmail(to, from, mailPath);
             queue.close();
@@ -57,8 +60,14 @@ class AddTestMail {
         catch (IOException e) {
             System.out.println("Can not write .eml file: " + e.getMessage() +
                     ". Please check if you have write access to the mail folder.");
+            System.exit(-2);
+        }
+        catch (Exception e) {
+            System.out.println(e.getClass() + ": " + e.getMessage());
+            System.exit(-3);
         }
 
         System.out.println("An email for <" + to + "> was prepared for delivery.");
+
     }
 }

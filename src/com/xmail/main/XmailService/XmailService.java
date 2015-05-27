@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
  * Created by cristian on 4/29/15.
  */
 public class XmailService {
-    final static Logger logger = Logger.getRootLogger();
+    final static Logger logger = Logger.getLogger(XmailService.class);
 
     final ConcurrentLinkedDeque<Thread> smtpThreadsList = new ConcurrentLinkedDeque<Thread>();
 
@@ -91,15 +91,20 @@ public class XmailService {
                         logger.info("Maximum of concurrent running SMTP threads reached...");
                     }
                 }
+            }
+            catch (Exception e) {
+                logger.error(e.getClass() + ": " + e.getMessage());
+            }
 
+
+            // Please note, this try... catch statement should be separately
+            // at the end of while loop
+            try {
                 // Sleep a while
                 Thread.sleep(Config.loopTime * 1000);
             }
             catch(InterruptedException ex) {
                 Thread.currentThread().interrupt();
-            }
-            catch (Exception e) {
-                logger.error("Unknown error occurred during email queue processing: " + e.getMessage());
             }
         }
 

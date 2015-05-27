@@ -13,7 +13,7 @@ import java.io.IOException;
  * Created by cristian on 4/29/15.
  */
 public class XmailWorker extends Thread {
-    final static Logger logger = Logger.getRootLogger();
+    final static Logger logger = Logger.getLogger(XmailWorker.class);
 
     /**
      * XmailWorker.process()
@@ -25,7 +25,7 @@ public class XmailWorker extends Thread {
         final String to, data;
         String mail_path = "";
         int status;
-        QueuedMails mail;
+        QueuedMails mail = null;
 
         logger.info("XmailWorker started");
 
@@ -77,7 +77,7 @@ public class XmailWorker extends Thread {
             if (status == SMTP.SUCCESS) {
                 // okay
                 queue.deleteEmail(mail);
-                logger.info("Email was sent okay.");
+                logger.info("Email for <" + to + "> was sent okay.");
             }
             else if(status == SMTP.MAILBOX_NOT_EXISTS || status == SMTP.PERMANENT_ERROR) {
 
@@ -90,14 +90,14 @@ public class XmailWorker extends Thread {
                 // remove the file from disk
                 queue.deleteEmail(mail);
 
-                logger.info("Email could not be delivered. Not queued.");
+                logger.info("Email for <" + to + "> could not be delivered. Not queued.");
             }
             else {
                 // check the log and queue if necessarily
                 if(queue.queueEmail(mail, sender.getLastCode(), sender.getLastMessage(), sender.getIpIndex(),
                         sender.getMxIndex(), sender.isIpv6Used(), sender.getIpv4(), sender.getIpv6())) {
 
-                    logger.info("Email could not be delivered. Queued.");
+                    logger.info("Email for <" + to + "> could not be delivered. Queued.");
                 }
                 else {
                     // send bounce
@@ -109,7 +109,7 @@ public class XmailWorker extends Thread {
                     // remove the file from disk
                     queue.deleteEmail(mail);
 
-                    logger.info("Email could not be delivered. Status code= " + Integer.toString(status) + ". Not queued.");
+                    logger.info("Email for <" + to + "> could not be delivered. Status code= " + Integer.toString(status) + ". Not queued.");
                 }
             }
 
@@ -121,6 +121,12 @@ public class XmailWorker extends Thread {
         }
         finally {
 
+            // Mark the email as "not processed" if the system crashed
+            if(mail != null) {
+                queue.changeEmailStatus(mail, 0);
+            }
+
+            // Close the queue
             queue.close();
         }
 
