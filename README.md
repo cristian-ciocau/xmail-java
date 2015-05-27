@@ -89,22 +89,24 @@ this and the main process will stop after all current running jobs are gracefull
     This is needed each time you will edit QueuedMails model.
     
     For a better understanding, please:
+        
         * watch this video: [ActiveJDBC + IntelliJ Idea + Instrumentation](https://www.youtube.com/watch?v=OHXJXzZNKCU) or 
+        
         * read the documentation: [Javalite.io instrumentation for IntelliJ](http://javalite.io/instrumentation#video-intellij-idea-instrumentation).
 
 # How to test
 1. In order to test **Xmail Java**, you need to do few edits in [Config]():
     1. Change the **EHLO** and email addresses according to your needs.
     ```
-    public static String ehlo = "ceakki.eu";
+        public static String ehlo = "ceakki.eu";
     
-    public static String bounceFrom = "postmaster@ceakki.eu";
+        public static String bounceFrom = "postmaster@example.com";
 
-    public static String testMailTo = "ceakki@yahoo.com";
+        public static String testMailTo = "to@example.com";
 
-    public static String testMailFrom = "cristian@mailwhere.com";
+        public static String testMailFrom = "from@example.com";
 
-    public static String testMailFromHeader = "cristian@ceakki.eu";
+        public static String testMailFromHeader = "from@example.com";
     ```
     
     2. Change the remote SMTP port ```public static int port = 25;```. Some ISPs blocks the default 25 port. 
@@ -128,7 +130,11 @@ this and the main process will stop after all current running jobs are gracefull
 # Dependencies
 The needed external libraries are already saved in the pom.xml file, so you don't have to bother of them. 
 Anyway, here is the list of them, if you are curious:
+    
     * [ActiveJDBC](http://javalite.io/activejdbc)
+    
     * [SQLite JDBC Driver by Xerial](https://bitbucket.org/xerial/sqlite-jdbc)
+    
     * [Apache log4j](http://logging.apache.org/log4j/1.2/)
+    
     * [Apache Commons IO](https://commons.apache.org/proper/commons-io/)

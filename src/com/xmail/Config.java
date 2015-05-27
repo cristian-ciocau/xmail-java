@@ -8,15 +8,15 @@ import java.util.List;
  */
 public class Config {
 
-    public static String ehlo = "ceakki.eu";
+    public static String ehlo = "example.com";
 
-    public static String bounceFrom = "postmaster@ceakki.eu";
+    public static String bounceFrom = "postmaster@example.com";
 
-    public static String testMailTo = "ceakki@yahoo.com";
+    public static String testMailTo = "to@example.com";
 
-    public static String testMailFrom = "cristian@mailwhere.com";
+    public static String testMailFrom = "from@example.com";
 
-    public static String testMailFromHeader = "cristian@ceakki.eu";
+    public static String testMailFromHeader = "from@example.com";
 
     public static int port = 25;
 
@@ -24,7 +24,6 @@ public class Config {
 
     public static String mailPath = System.getProperty("user.dir") + "/mail/";
 
-    // Just for debug
     public static int maxSmtpThreads = 2;
 
     public static int loopTime = 10;
