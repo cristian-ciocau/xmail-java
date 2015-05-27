@@ -1,4 +1,4 @@
-package com.xmail.SMTP;
+package com.xmail.main.SMTP;
 
 import java.util.HashMap;
 import java.util.Map;

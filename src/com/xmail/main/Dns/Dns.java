@@ -1,4 +1,4 @@
-package com.xmail.Dns;
+package com.xmail.main.Dns;
 
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;

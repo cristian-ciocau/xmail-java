@@ -1,6 +1,6 @@
-package com.xmail;
+package com.xmail.main;
 
-import com.xmail.XmailService.XmailService;
+import com.xmail.main.XmailService.XmailService;
 import org.apache.log4j.PropertyConfigurator;
 
 public class Main {

@@ -1,4 +1,4 @@
-package com.xmail.XmailService;
+package com.xmail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,21 +6,24 @@ import java.util.List;
 /**
  * Created by cristian on 5/1/15.
  */
-public class XmailConfig {
+public class Config {
 
-    public static String ehlo = "example.com";
+    public static String ehlo = "ceakki.eu";
 
-    public static String bounceFrom = "postmaster@example.com";
+    public static String bounceFrom = "postmaster@ceakki.eu";
+
+    public static String testMailTo = "ceakki@yahoo.com";
+
+    public static String testMailFrom = "cristian@mailwhere.com";
+
+    public static String testMailFromHeader = "cristian@ceakki.eu";
+
+    public static int port = 25;
 
     public static String dbPath = System.getProperty("user.dir") + "/data/data.db";
 
     public static String mailPath = System.getProperty("user.dir") + "/mail/";
 
-    public static int port = 24;
-
-/*
-    public static int maxSmtpThreads = 10;
-*/
     // Just for debug
     public static int maxSmtpThreads = 2;
 

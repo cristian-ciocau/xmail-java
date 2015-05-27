@@ -1,6 +1,6 @@
-package com.xmail.SMTP;
+package com.xmail.main.SMTP;
 
-import com.xmail.Mime.Mime;
+import com.xmail.main.Mime.Mime;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.*;
@@ -81,7 +81,7 @@ public class Composer {
                 if(f.exists() && f.isFile()) {
                     // Get file info
                     String ext = FilenameUtils.getExtension(filePath);
-                    String name = FilenameUtils.getBaseName(filePath);
+                    String name = FilenameUtils.getName(filePath);
                     String type = getExtensionMime(ext);
 
                     // Attachment headers

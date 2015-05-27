@@ -1,8 +1,9 @@
-package com.xmail.XmailService;
+package com.xmail.main.XmailService;
 
-import com.xmail.IO.FileUtils;
-import com.xmail.Mime.Mime;
-import com.xmail.SMTP.Composer;
+import com.xmail.Config;
+import com.xmail.main.IO.FileUtils;
+import com.xmail.main.Mime.Mime;
+import com.xmail.main.SMTP.Composer;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -32,35 +33,31 @@ public class XmailBounce {
     public boolean sendBounce(String to, String originalTo, String originalMailPath, int lastCode, String lastMessage,
                               int deliveryAttempts, String remoteMta) {
 
-        String from = XmailConfig.bounceFrom;
+        String from = Config.bounceFrom;
         remoteMta = "[" + remoteMta + "]";
 
         try {
+
+            // Get the original mail content
             String emailContent = FileUtils.getFileContents(originalMailPath);
 
+            // Prepare the bounce attachments
             String humanReport = Mime.composeHumanReport(originalTo, lastMessage);
-            String deliveryStatus = Mime.composeDelivryStatus(originalTo, XmailConfig.ehlo, remoteMta, lastCode,
+            String deliveryStatus = Mime.composeDelivryStatus(originalTo, Config.ehlo, remoteMta, lastCode,
                     lastMessage + " (delivery attempts: " + Integer.toString(deliveryAttempts) + ")");
 
+            // Compose the bounce
             Composer composer = new Composer();
             Map<String, String> mail = composer.composeBounce(to, humanReport, deliveryStatus, emailContent, from);
 
-            File file = File.createTempFile("xmail", ".eml", new File("/Data/git/xmail-java/mail/"));
+            // Save email to disk
+            File file = File.createTempFile("xmail", ".eml", new File(Config.mailPath));
             String mailPath = file.getAbsolutePath();
-
             FileUtils.putFileContents(file, mail.get("headers") + "\r\n" + mail.get("content"));
 
+            // Add email to queue
             MailQueue queue = MailQueue.getInstance();
-            if(!queue.init(XmailConfig.dbPath)) {
-                logger.error("Could not create the database.");
-                return false;
-            }
-            if(!queue.open()) {
-                logger.error("Could not connect to database.");
-                return false;
-            }
             queue.addEmail(to, from, mailPath);
-            queue.close();
         }
         catch (IOException e) {
             logger.error("Bounce preparing error: " + e.getMessage());

@@ -1,9 +1,9 @@
-package com.xmail.XmailService;
+package com.xmail.main.XmailService;
 
-import com.xmail.XmailService.Models.QueuedMails;
+import com.xmail.Config;
+import com.xmail.main.XmailService.Models.QueuedMails;
 import org.apache.log4j.Logger;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
@@ -29,7 +29,7 @@ public class XmailService {
 
         // Initialize the Mail Queue
         MailQueue queue = MailQueue.getInstance();
-        if(!queue.init(XmailConfig.dbPath)) {
+        if(!queue.init(Config.dbPath)) {
             logger.error("Could not create the database.");
             return;
         }
@@ -37,10 +37,11 @@ public class XmailService {
             logger.error("Could not open the database");
             return;
         }
+        queue.reset();
 
         // Initialize the outgoing IP addresses queue
         IpQueue ipQueue = IpQueue.getInstance();
-        ipQueue.init(XmailConfig.outgoingIPv4, XmailConfig.outgoingIPv6);
+        ipQueue.init(Config.outgoingIPv4, Config.outgoingIPv6);
 
         logger.info("XmailService started.");
 
@@ -56,10 +57,10 @@ public class XmailService {
             }
 
             try {
-                List<QueuedMails> mails = queue.getEmails(XmailConfig.maxSmtpThreads);
+                List<QueuedMails> mails = queue.getEmails(Config.maxSmtpThreads);
                 for (final QueuedMails mail : mails) {
 
-                    if (smtpThreadsList.size() < XmailConfig.maxSmtpThreads) {
+                    if (smtpThreadsList.size() < Config.maxSmtpThreads) {
 
                         if (!queue.changeEmailStatus(mail, 1)) {
                             logger.error("Can not mark email for processing (db write error).");
@@ -92,7 +93,7 @@ public class XmailService {
                 }
 
                 // Sleep a while
-                Thread.sleep(XmailConfig.loopTime * 1000);
+                Thread.sleep(Config.loopTime * 1000);
             }
             catch(InterruptedException ex) {
                 Thread.currentThread().interrupt();

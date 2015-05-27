@@ -1,4 +1,4 @@
-package com.xmail.IO;
+package com.xmail.main.IO;
 
 import java.io.*;
 
@@ -118,6 +118,18 @@ public class FileUtils {
      */
     public static boolean deleteFile(String pathToFile) {
         File file = new File(pathToFile);
+        return deleteFile(file);
+    }
+
+    /**
+     * FileUtils.deleteFile()
+     *
+     * Remove a file from disk
+     *
+     * @param file
+     * @return
+     */
+    public static boolean deleteFile(File file) {
         return file.delete();
     }
 }

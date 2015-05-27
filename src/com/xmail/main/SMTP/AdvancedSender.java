@@ -1,8 +1,8 @@
-package com.xmail.SMTP;
+package com.xmail.main.SMTP;
 
-import com.xmail.Dns.Dns;
-import com.xmail.XmailService.IpQueue;
-import com.xmail.XmailService.XmailConfig;
+import com.xmail.main.Dns.Dns;
+import com.xmail.main.XmailService.IpQueue;
+import com.xmail.Config;
 import org.apache.log4j.Logger;
 
 import javax.naming.NamingException;
@@ -50,7 +50,7 @@ public class AdvancedSender extends Sender {
                 for(; mxIndex < mxs.length; mxIndex++) {
                     logger.debug("Remote MTA: " + mxs[mxIndex][1]);
 
-                    if(XmailConfig.ipv6Enabled && ipv6Used) {
+                    if(Config.ipv6Enabled && ipv6Used) {
                         if(bindingIPv6 == null) bindingIPv6 = ipQueue.getIpv6();
                         logger.info("Bound to IPv6: " + bindingIPv6);
 

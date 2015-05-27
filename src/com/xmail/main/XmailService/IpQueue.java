@@ -1,4 +1,4 @@
-package com.xmail.XmailService;
+package com.xmail.main.XmailService;
 
 /**
  * Created by cristian on 5/12/15.

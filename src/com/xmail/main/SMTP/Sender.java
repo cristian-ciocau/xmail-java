@@ -1,4 +1,4 @@
-package com.xmail.SMTP;
+package com.xmail.main.SMTP;
 
 import org.apache.commons.io.IOExceptionWithCause;
 import org.apache.log4j.Logger;
@@ -189,6 +189,8 @@ public class Sender {
     private boolean connect(String mx, String sourceIP) {
         try {
 
+            logger.info("Trying to connect to " + mx);
+
             smtpSocket = new Socket();
             smtpSocket.setReuseAddress(true);
             smtpSocket.bind(new InetSocketAddress(sourceIP, 0));
@@ -208,6 +210,8 @@ public class Sender {
             lastMessage = "Connect: IOError";
             return false;
         }
+
+        logger.info("Successfully connected to " + mx);
 
         return true;
     }
@@ -284,6 +288,14 @@ public class Sender {
             logger.error("SOCKET Read: NullPointerException:  " + e);
             lastCode = READ_ERROR;
             lastMessage = "Error reading from MTA.";
+            return READ_ERROR;
+        }
+
+        // If nothing was received
+        if (response == "") {
+            logger.error("Could not get mail server response code. Socket probably closed.");
+            lastCode = READ_ERROR;
+            lastMessage = "Could not get mail server response codes.";
             return READ_ERROR;
         }
 

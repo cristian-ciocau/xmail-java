@@ -1,7 +1,9 @@
-package com.xmail.XmailService;
+package com.xmail.main.XmailService;
 
-import com.xmail.IO.FileUtils;
-import com.xmail.XmailService.Models.QueuedMails;
+import com.xmail.Config;
+import com.xmail.main.IO.FileUtils;
+import com.xmail.main.XmailService.Models.QueuedMails;
+import org.apache.log4j.Logger;
 import org.javalite.activejdbc.Base;
 
 import java.io.File;
@@ -13,6 +15,7 @@ import java.util.*;
  * Created by cristian on 4/30/15.
  */
 public class MailQueue {
+    final static Logger logger = Logger.getRootLogger();
 
     private static MailQueue instance = null;
     private static String dbPath;
@@ -61,6 +64,7 @@ public class MailQueue {
             dbPath = dbFile.getAbsolutePath();
         }
         catch(IOException e) {
+            logger.error("Database creation error: " + e.getMessage());
             return false;
         }
 
@@ -78,6 +82,7 @@ public class MailQueue {
             createQueue();
         }
         catch(Exception e) {
+            logger.error("Database open error: " + e.getMessage());
             return false;
         }
 
@@ -94,7 +99,7 @@ public class MailQueue {
             Base.close();
         }
         catch(Exception e) {
-
+            logger.error("Database close error: " + e.getMessage());
         }
     }
 
@@ -142,7 +147,7 @@ public class MailQueue {
      */
     public static synchronized List<QueuedMails> getEmails(int limit) {
         List<QueuedMails> ret = QueuedMails.where("status = 0 AND retry < ? AND date_processed < datetime('now')",
-                XmailConfig.maxRetryCount - 1)
+                Config.maxRetryCount - 1)
                 .limit(limit)
                 .orderBy("date_processed asc");
         return ret;
@@ -172,10 +177,10 @@ public class MailQueue {
 
 
             int retry = (Integer) mail.get("retry");
-            if(retry < XmailConfig.maxRetryCount - 1) {
+            if(retry < Config.maxRetryCount - 1) {
                 retry++;
 
-                long timeAdj = XmailConfig.retryTime.get(retry) * 1000;
+                long timeAdj = Config.retryTime.get(retry) * 1000;
 
                 /* This is a crazy approach to get the time in UTC ? */
                 TimeZone timeZone = TimeZone.getTimeZone("UTC");
@@ -197,7 +202,7 @@ public class MailQueue {
                 mail.saveIt();
             }
 
-            if(retry >= XmailConfig.maxRetryCount - 1) {
+            if(retry >= Config.maxRetryCount - 1) {
                 return false;
             }
         }
@@ -346,7 +351,7 @@ public class MailQueue {
      * @param status
      * @return
      */
-    public static synchronized  boolean changeEmailStatus(QueuedMails mail, int status) {
+    public static synchronized boolean changeEmailStatus(QueuedMails mail, int status) {
         try {
             mail.set("status", status).saveIt();
         }
@@ -355,6 +360,19 @@ public class MailQueue {
         }
 
         return true;
+    }
+
+    /**
+     * MailQueue.reset()
+     *
+     * Set all "sending" mails back to "ready to be sent" state.
+     *
+     * This method should be used when the service starts,
+     * because if the service died during an email sending transaction,
+     * it is possible that some emails remained marked as "sending".
+     */
+    public static synchronized void reset() {
+        Base.exec("UPDATE queued_mails SET status = 0");
     }
 
 }
