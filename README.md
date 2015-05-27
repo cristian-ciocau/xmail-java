@@ -90,6 +90,7 @@ this and the main process will stop after all current running jobs are gracefull
     
     For a better understanding of Maven Goal for ActiveJDBC, please:
         * watch this video: [ActiveJDBC + IntelliJ Idea + Instrumentation](https://www.youtube.com/watch?v=OHXJXzZNKCU) or 
+        
         * read the documentation: [Javalite.io instrumentation for IntelliJ](http://javalite.io/instrumentation#video-intellij-idea-instrumentation).
 
 # How to test
@@ -128,7 +129,10 @@ this and the main process will stop after all current running jobs are gracefull
 # Dependencies
 The needed external libraries are already saved in the pom.xml file, so you don't have to bother of them. 
 Anyway, here is the list of them, if you are curious:
-    * [ActiveJDBC](http://javalite.io/activejdbc)
-    * [SQLite JDBC Driver by Xerial](https://bitbucket.org/xerial/sqlite-jdbc)
-    * [Apache log4j](http://logging.apache.org/log4j/1.2/)
-    * [Apache Commons IO](https://commons.apache.org/proper/commons-io/)
+* [ActiveJDBC](http://javalite.io/activejdbc)
+
+* [SQLite JDBC Driver by Xerial](https://bitbucket.org/xerial/sqlite-jdbc)
+
+* [Apache log4j](http://logging.apache.org/log4j/1.2/)
+
+* [Apache Commons IO](https://commons.apache.org/proper/commons-io/)
